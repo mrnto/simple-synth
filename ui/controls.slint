@@ -1,0 +1,25 @@
+import { ComboBox } from "std-widgets.slint";
+
+export global ControlsAdapter {
+    callback select_waveform(value: string);
+}
+
+export component Controls {
+    width: option.width;
+    height: option.height;
+    
+    option := ComboBox {
+        model: [
+            @tr("Sine"),
+            @tr("Square"),
+            @tr("Triangle"),
+            @tr("Sawtooth"),
+            @tr("Noise")
+        ];
+        current-index: 0;
+        
+        selected(value) => {
+            ControlsAdapter.select_waveform(value);
+        }
+    }
+}

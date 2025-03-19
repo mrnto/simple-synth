@@ -1,0 +1,15 @@
+import { Controls, ControlsAdapter } from "./controls.slint";
+import { Keyboard, KeyboardAdapter } from "./keyboard.slint";
+
+export { ControlsAdapter, KeyboardAdapter }
+
+export component SynthWindow inherits Window {
+    title: @tr("Simple Synthesizer");
+    preferred-width: controls.width + keyboard.width;
+    preferred-height: controls.height + keyboard.height;
+
+    VerticalLayout {
+        controls := Controls {}
+        keyboard := Keyboard {}
+    }
+}

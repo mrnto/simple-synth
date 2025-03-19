@@ -1,0 +1,62 @@
+import { EmptyWrapper } from "./empty_wrapper.slint";
+import { Key } from "./key.slint";
+
+export global KeyboardAdapter {
+    in-out property <int> octaves_number: 1;
+    in-out property <int> initial_octave: 4;
+    out property <[string]> black_keys: ["C#", "D#", "", "F#", "G#", "A#", ""];
+    out property <[string]> white_keys: ["C", "D", "E", "F", "G", "A", "B"];
+
+    callback key_pressed(note: string, octave: int);
+    callback key_released(note: string, octave: int);
+}
+
+export component Keyboard {
+    HorizontalLayout {
+        for octave in KeyboardAdapter.octaves_number : EmptyWrapper {
+            HorizontalLayout {
+                for key in KeyboardAdapter.white_keys : Key {
+                    note: key;
+                    octave: KeyboardAdapter.initial_octave + octave;
+
+                    key_pressed(note, octave) => {
+                        KeyboardAdapter.key_pressed(note, octave);
+                    }
+                    key_released(note, octave) => {
+                        KeyboardAdapter.key_released(note, octave);
+                    }
+                }
+            }
+            HorizontalLayout {
+                x: 35px;
+                y: -45px;
+                for key in KeyboardAdapter.black_keys : EmptyWrapper {
+                    if key != "" : Key {
+                        is_black: true;
+                        note: key;
+                        octave: KeyboardAdapter.initial_octave + octave;
+
+                        key_pressed(note, octave) => {
+                            KeyboardAdapter.key_pressed(note, octave);
+                        }
+                        key_released(note, octave) => {
+                            KeyboardAdapter.key_released(note, octave);
+                        }
+                    }
+                }
+            }
+        }
+        // Extra C note
+        Key {
+            note: "C";
+            octave: KeyboardAdapter.initial_octave + KeyboardAdapter.octaves_number;
+
+            key_pressed(note, octave) => {
+                KeyboardAdapter.key_pressed(note, octave);
+            }
+            key_released(note, octave) => {
+                KeyboardAdapter.key_released(note, octave);
+            }
+        }
+    }
+}
