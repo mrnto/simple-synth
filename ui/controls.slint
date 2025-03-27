@@ -1,12 +1,30 @@
 import { ComboBox } from "std-widgets.slint";
+import { Knob } from "knob.slint";
 
 export global ControlsAdapter {
-    callback select_waveform(value: string);
+    callback waveform_selected(waveform: string);
+    callback attack_changed(attack: float);
+    callback decay_changed(decay: float);
+    callback sustain_changed(sustain: float);
+    callback release_changed(release: float);
+
+    // pure public function normalize_angle_range(angle: angle) -> float {
+    //     return (angle - 60deg) / (120deg - 60deg);
+    // }
+
+    // TODO: move
+    pure public function normalize_angle_range(angle: angle) -> float {
+        if angle >= 120deg && angle <= 360deg {
+            return (angle - 120.0deg) / 300.0deg;
+        } else {
+            return (angle - 120.0deg + 360.0deg) / 300.0deg;
+        }
+    }
 }
 
 export component Controls {
-    width: option.width;
-    height: option.height;
+    width: option.width + hl.width;
+    height: option.height + hl.height;
     
     option := ComboBox {
         model: [
@@ -18,8 +36,33 @@ export component Controls {
         ];
         current-index: 0;
         
-        selected(value) => {
-            ControlsAdapter.select_waveform(value);
+        selected(waveform) => {
+            ControlsAdapter.waveform_selected(waveform);
+        }
+    }
+    
+    hl := HorizontalLayout {
+        width: attack.width * 4;
+        height: attack.height * 4;
+        attack := Knob {
+            angle_changed(angle) => {
+                ControlsAdapter.attack_changed(ControlsAdapter.normalize_angle_range(angle));
+            }
+        }
+        decay := Knob {
+            angle_changed(angle) => {
+                ControlsAdapter.decay_changed(ControlsAdapter.normalize_angle_range(angle));
+            }
+        }
+        sustain := Knob {
+            angle_changed(angle) => {
+                ControlsAdapter.sustain_changed(ControlsAdapter.normalize_angle_range(angle));
+            }
+        }
+        release := Knob {
+            angle_changed(angle) => {
+                ControlsAdapter.release_changed(ControlsAdapter.normalize_angle_range(angle));
+            }
         }
     }
 }

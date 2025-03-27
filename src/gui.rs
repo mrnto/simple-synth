@@ -1,4 +1,4 @@
-use crate::{audio_engine::AudioEngine, oscillator::Waveform, synth_msg::SynthMsg};
+use crate::{audio_engine::AudioEngine, messages::{EnvelopeMsg, OscillatorMsg, SynthMsg}, oscillator::Waveform};
 
 slint::include_modules!();
 
@@ -16,11 +16,43 @@ fn init(audio: &AudioEngine) -> SynthWindow {
 }
 
 fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
-    view_handle.global::<ControlsAdapter>().on_select_waveform({
+    // TODO: too many
+    view_handle.global::<ControlsAdapter>().on_attack_changed({
+        let tx_clone = audio.clone_sender();
+        move |attack| {
+            let attack_time = normalize_to_time(attack);
+            println!("attack: {}", attack);
+            println!("Normalized from 10ms to 10sec: {}", attack_time);
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetAttack(attack_time/100.0))).unwrap();
+        }
+    });
+    view_handle.global::<ControlsAdapter>().on_decay_changed({
+        let tx_clone = audio.clone_sender();
+        move |decay| {
+            let decay_time = normalize_to_time(decay);
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay/100.0))).unwrap();
+        }
+    });
+    view_handle.global::<ControlsAdapter>().on_sustain_changed({
+        let tx_clone = audio.clone_sender();
+        move |sustain| {
+            println!("Sustain level: {}", sustain);
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetSustain(sustain))).unwrap();
+        }
+    });
+    view_handle.global::<ControlsAdapter>().on_release_changed({
+        let tx_clone = audio.clone_sender();
+        move |release| {
+            let release_time = normalize_to_time(release);
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release/100.0))).unwrap();
+        }
+    });
+
+    view_handle.global::<ControlsAdapter>().on_waveform_selected({
         let tx_clone = audio.clone_sender();
         move |waveform| {
             if let Some(waveform) = string_to_waveform(&waveform) {
-                tx_clone.send(SynthMsg::SetWaveform(waveform)).unwrap();
+                tx_clone.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetWaveform(waveform))).unwrap();
             } else {
                 eprintln!("Invalid waveform selected: {}", waveform);
             }
@@ -30,14 +62,14 @@ fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
         let tx_clone = audio.clone_sender();
         move |note, octave| {
             let frequency = note_to_frequency(&note, octave).unwrap();
-            tx_clone.send(SynthMsg::SetFrequency(frequency)).unwrap();
+            tx_clone.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetFrequency(frequency))).unwrap();
             println!("{}{} {}", note, octave, frequency);
         }
     });
     view_handle.global::<KeyboardAdapter>().on_key_released({
         let tx_clone = audio.clone_sender();
         move |note, octave| {
-            tx_clone.send(SynthMsg::SetFrequency(0.0)).unwrap();
+            tx_clone.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetFrequency(0.0))).unwrap();
         }
     });
 }
@@ -77,4 +109,26 @@ fn note_to_semitone(note: &str) -> Result<i32, String> {
         "B"  => Ok(2),
         _ => Err(format!("Invalid note: {}", note)),
     }
+}
+
+fn normalize_to_time(y: f32) -> f32 {
+    let breakpoints = vec![
+        (10.0, 0.0),    // 10ms -> 0
+        (200.0, 0.2),   // 200ms -> 0.2
+        (600.0, 0.4),   // 600ms -> 0.4
+        (1000.0, 0.6),  // 1 sec -> 0.6
+        (5000.0, 0.8),  // 5 sec -> 0.8
+        (10000.0, 1.0), // 10 sec -> 1
+    ];
+
+    for i in 0..breakpoints.len() - 1 {
+        let (x1, y1) = breakpoints[i];
+        let (x2, y2) = breakpoints[i + 1];
+
+        if y >= y1 && y <= y2 {
+            return x1 + (y - y1) * (x2 - x1) / (y2 - y1);
+        }
+    }
+
+    10000.0
 }

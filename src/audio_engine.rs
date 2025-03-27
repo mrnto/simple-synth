@@ -6,9 +6,11 @@ use cpal::{
     default_host,
 };
 use std::sync::mpsc::{self, Receiver, Sender};
-use crate::error::DeviceSetupError;
-use crate::synth_msg::SynthMsg;
-use crate::synthesizer::Synthesizer;
+use crate::{
+    error::DeviceSetupError,
+    messages::SynthMsg,
+    synthesizer::Synthesizer,
+};
 
 pub struct AudioEngine {
     host: Host,
@@ -101,22 +103,8 @@ impl AudioEngine {
         let stream = self.device.build_output_stream(
             &config,
             move |output: &mut [T], _: &OutputCallbackInfo| {
-                // self.process_commands();
-                while let Ok(command) = rx.try_recv() {
-                    match command {
-                        SynthMsg::SetFrequency(freq) => {
-                            synthesizer.set_frequency(freq);
-                        },
-                        SynthMsg::SetSampleRate(rate) => {
-                            synthesizer.set_sample_rate(rate);
-                        },
-                        SynthMsg::SetWaveform(waveform) => {
-                            synthesizer.set_waveform(waveform);
-                        },
-                        SynthMsg::SetOscillator(waveform, freq, rate) => {
-                            synthesizer.set_oscillator(waveform, freq, rate);
-                        }
-                    }
+                while let Ok(message) = rx.try_recv() {
+                    synthesizer.handle_message(message);
                 }
                 
                 // self.process_frame(output, channels)
@@ -144,16 +132,6 @@ impl AudioEngine {
 
     //         for sample in frame.iter_mut() {
     //             *sample = value;
-    //         }
-    //     }
-    // }
-
-    // fn process_commands(&mut self) {
-    //     while let Ok(command) = self.receiver.try_recv() {
-    //         match command {
-    //             SynthCommand::SetOscillator(waveform, freq, rate) => {
-    //                 self.synthesizer.set_oscillator(waveform, freq, rate);
-    //             }
     //         }
     //     }
     // }

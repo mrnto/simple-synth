@@ -6,23 +6,23 @@ mod gui;
 mod audio_engine;
 mod error;
 mod synthesizer;
-mod synth_msg;
+mod messages;
 mod oscillator;
 mod envelope;
 
 use audio_engine::AudioEngine;
 use gui::run;
 use oscillator::Waveform;
-use synth_msg::SynthMsg;
+use messages::{OscillatorMsg, SynthMsg};
 use synthesizer::Synthesizer;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let synth = Synthesizer::new();
+    let synth = Synthesizer::new(44100);
     let audio = AudioEngine::new(synth)?;
 
     let tx_clone = audio.clone_sender();
     let rate = audio.sample_rate();
-    let _ = tx_clone.send(SynthMsg::SetOscillator(Waveform::Sine, 0.0, rate));
+    let _ = tx_clone.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetOscillator(rate, Waveform::Sine, 0.0)));
 
     audio.play()?;
 

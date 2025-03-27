@@ -11,36 +11,20 @@ pub enum Waveform {
 }
 
 pub struct Oscillator {
-    waveform: Waveform,
     frequency: f32,
-    sample_rate: u32,
     phase: f32,
+    sample_rate: u32,
+    waveform: Waveform,
 }
 
 impl Oscillator {
-    pub fn new(waveform: Waveform, frequency: f32, sample_rate: u32) -> Self {
+    pub fn new(sample_rate: u32, waveform: Waveform, frequency: f32) -> Self {
         Self {
+            sample_rate,
             waveform,
             frequency,
-            sample_rate,
             phase: 0.0,
         }
-    }
-
-    pub fn set_waveform(&mut self, waveform: Waveform) {
-        if self.waveform != waveform {
-            self.phase = 0.0;
-        }
-
-        self.waveform = waveform;
-    }
-
-    pub fn set_frequency(&mut self, frequency: f32) {
-        self.frequency = frequency;
-    }
-
-    pub fn set_sample_rate(&mut self, sample_rate: u32) {
-        self.sample_rate = sample_rate;
     }
 
     pub fn tick(&mut self) -> f32 {
@@ -65,6 +49,29 @@ impl Oscillator {
         self.phase = (self.phase + self.frequency / self.sample_rate as f32).rem_euclid(1.0);
 
         sample
+    }
+
+    pub fn set_frequency(&mut self, frequency: f32) {
+        self.frequency = frequency.clamp(0.0, self.sample_rate as f32 / 2.0);
+        // TODO: Fix "pops" when reset
+        // self.phase = 0.0;
+    }
+
+    pub fn set_waveform(&mut self, waveform: Waveform) {
+        if self.waveform != waveform {
+            self.waveform = waveform;
+            // TODO: Fix "pops" when reset
+            // self.phase = 0.0;
+        }
+    }
+
+    pub fn set_sample_rate(&mut self, sample_rate: u32) {
+        if sample_rate <= 0 {
+            return;
+        }
+        
+        self.sample_rate = sample_rate;
+        self.frequency = 0.0;
     }
 
     fn generate_sine(&self) -> f32 {
