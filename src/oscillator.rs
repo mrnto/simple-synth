@@ -18,12 +18,12 @@ pub struct Oscillator {
 }
 
 impl Oscillator {
-    pub fn new(sample_rate: u32, waveform: Waveform, frequency: f32) -> Self {
+    pub fn new(sample_rate: u32) -> Self {
         Self {
-            sample_rate,
-            waveform,
-            frequency,
+            frequency: 440.0,
             phase: 0.0,
+            sample_rate,
+            waveform: Waveform::Sine,
         }
     }
 
@@ -33,38 +33,30 @@ impl Oscillator {
             Waveform::Square => self.generate_square(),
             Waveform::Triangle => self.generate_triangle(),
             Waveform::Sawtooth => self.generate_sawtooth(),
-            Waveform::Noise => {
-                if self.frequency == 0.0 {
-                    0.0
-                } else {
-                    self.generate_noise()
-                }
-            },
+            Waveform::Noise =>
+                if self.frequency == 0.0 { 0.0 } else { self.generate_noise() },
         };
 
-        // self.phase += self.frequency / self.sample_rate as f32;
-        // if self.phase >= 1.0 {
-        //     self.phase -= 1.0;
-        // }
         self.phase = (self.phase + self.frequency / self.sample_rate as f32).rem_euclid(1.0);
 
         sample
     }
 
+    // TODO: Fix "pops" when reset
     pub fn set_frequency(&mut self, frequency: f32) {
         self.frequency = frequency.clamp(0.0, self.sample_rate as f32 / 2.0);
-        // TODO: Fix "pops" when reset
         // self.phase = 0.0;
     }
 
+    // TODO: Fix "pops" when reset
     pub fn set_waveform(&mut self, waveform: Waveform) {
         if self.waveform != waveform {
             self.waveform = waveform;
-            // TODO: Fix "pops" when reset
             // self.phase = 0.0;
         }
     }
 
+    // TODO
     pub fn set_sample_rate(&mut self, sample_rate: u32) {
         if sample_rate <= 0 {
             return;
@@ -79,12 +71,10 @@ impl Oscillator {
     }
 
     fn generate_square(&self) -> f32 {
-        // if self.generate_sine() <= 0.0 { 1.0 } else { -1.0 }
         if self.phase < 0.5 { 1.0 } else { -1.0 }
     }
 
     fn generate_triangle(&self) -> f32 {
-        // 2.0 / PI * self.generate_sine().asin()
         if self.phase < 0.5 {
             4.0 * self.phase - 1.0
         } else {
@@ -93,7 +83,6 @@ impl Oscillator {
     }
 
     fn generate_sawtooth(&self) -> f32 {
-        // -2.0 / PI * (PI * self.phase).tan().atan()
         2.0 * self.phase - 1.0
     }
 

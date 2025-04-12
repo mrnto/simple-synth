@@ -30,7 +30,7 @@ fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
         let tx_clone = audio.clone_sender();
         move |decay| {
             let decay_time = normalize_to_time(decay);
-            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay/100.0))).unwrap();
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay_time/100.0))).unwrap();
         }
     });
     view_handle.global::<ControlsAdapter>().on_sustain_changed({
@@ -44,7 +44,7 @@ fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
         let tx_clone = audio.clone_sender();
         move |release| {
             let release_time = normalize_to_time(release);
-            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release/100.0))).unwrap();
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release_time/100.0))).unwrap();
         }
     });
 

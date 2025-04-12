@@ -14,7 +14,7 @@ pub struct Synthesizer {
 impl Synthesizer {
     pub fn new(sample_rate: u32) -> Self {
         Self {
-            oscillator: Some(Oscillator::new(sample_rate, Waveform::Sine, 0.0)),
+            oscillator: Some(Oscillator::new(sample_rate)),
             envelope: Envelope::new(sample_rate),
         }
     }
@@ -57,7 +57,8 @@ impl Synthesizer {
                         }
                     },
                     OscillatorMsg::SetOscillator(sample_rate, waveform, frequency) => {
-                        self.oscillator = Some(Oscillator::new(sample_rate, waveform, frequency))
+                        self.oscillator = Some(Oscillator::new(sample_rate))
+                        // then set
                     },
                 }
             },
