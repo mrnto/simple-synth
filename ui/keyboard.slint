@@ -16,7 +16,7 @@ export component Keyboard {
         for octave in KeyboardAdapter.octaves_number : EmptyWrapper {
             HorizontalLayout {
                 for offset in KeyboardAdapter.white_semitone_offsets : Key {
-                    midi_note_number: (KeyboardAdapter.initial_octave + 1) * 12 + offset;
+                    midi_note_number: (KeyboardAdapter.initial_octave + 1 + octave) * 12 + offset;
 
                     key_pressed(midi_note_number) => {
                         KeyboardAdapter.key_pressed(midi_note_number);
@@ -32,7 +32,7 @@ export component Keyboard {
                 for offset in KeyboardAdapter.black_semitone_offsets : EmptyWrapper {
                     if offset != -1 : Key {
                         is_black: true;
-                        midi_note_number: (KeyboardAdapter.initial_octave + 1) * 12 + offset;
+                        midi_note_number: (KeyboardAdapter.initial_octave + 1 + octave) * 12 + offset;
 
                         key_pressed(midi_note_number) => {
                             KeyboardAdapter.key_pressed(midi_note_number);
