@@ -4,43 +4,41 @@ import { Key } from "./key.slint";
 export global KeyboardAdapter {
     in-out property <int> octaves_number: 1;
     in-out property <int> initial_octave: 4;
-    out property <[string]> black_keys: ["C#", "D#", "", "F#", "G#", "A#", ""];
-    out property <[string]> white_keys: ["C", "D", "E", "F", "G", "A", "B"];
+    out property <[int]> black_semitone_offsets: [1, 3, -1, 6, 8, 10, -1];
+    out property <[int]> white_semitone_offsets: [0, 2, 4, 5, 7, 9, 11];
 
-    callback key_pressed(note: string, octave: int);
-    callback key_released(note: string, octave: int);
+    callback key_pressed(midi_note_number: int);
+    callback key_released(midi_note_number: int);
 }
 
 export component Keyboard {
     HorizontalLayout {
         for octave in KeyboardAdapter.octaves_number : EmptyWrapper {
             HorizontalLayout {
-                for key in KeyboardAdapter.white_keys : Key {
-                    note: key;
-                    octave: KeyboardAdapter.initial_octave + octave;
+                for offset in KeyboardAdapter.white_semitone_offsets : Key {
+                    midi_note_number: (KeyboardAdapter.initial_octave + 1) * 12 + offset;
 
-                    key_pressed(note, octave) => {
-                        KeyboardAdapter.key_pressed(note, octave);
+                    key_pressed(midi_note_number) => {
+                        KeyboardAdapter.key_pressed(midi_note_number);
                     }
-                    key_released(note, octave) => {
-                        KeyboardAdapter.key_released(note, octave);
+                    key_released(midi_note_number) => {
+                        KeyboardAdapter.key_released(midi_note_number);
                     }
                 }
             }
             HorizontalLayout {
                 x: 35px;
                 y: -45px;
-                for key in KeyboardAdapter.black_keys : EmptyWrapper {
-                    if key != "" : Key {
+                for offset in KeyboardAdapter.black_semitone_offsets : EmptyWrapper {
+                    if offset != -1 : Key {
                         is_black: true;
-                        note: key;
-                        octave: KeyboardAdapter.initial_octave + octave;
+                        midi_note_number: (KeyboardAdapter.initial_octave + 1) * 12 + offset;
 
-                        key_pressed(note, octave) => {
-                            KeyboardAdapter.key_pressed(note, octave);
+                        key_pressed(midi_note_number) => {
+                            KeyboardAdapter.key_pressed(midi_note_number);
                         }
-                        key_released(note, octave) => {
-                            KeyboardAdapter.key_released(note, octave);
+                        key_released(midi_note_number) => {
+                            KeyboardAdapter.key_released(midi_note_number);
                         }
                     }
                 }
@@ -48,14 +46,13 @@ export component Keyboard {
         }
         // Extra C note
         Key {
-            note: "C";
-            octave: KeyboardAdapter.initial_octave + KeyboardAdapter.octaves_number;
+            midi_note_number: (KeyboardAdapter.initial_octave + KeyboardAdapter.octaves_number + 1) * 12;
 
-            key_pressed(note, octave) => {
-                KeyboardAdapter.key_pressed(note, octave);
+            key_pressed(midi_note_number) => {
+                KeyboardAdapter.key_pressed(midi_note_number);
             }
-            key_released(note, octave) => {
-                KeyboardAdapter.key_released(note, octave);
+            key_released(midi_note_number) => {
+                KeyboardAdapter.key_released(midi_note_number);
             }
         }
     }

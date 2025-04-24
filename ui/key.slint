@@ -1,10 +1,9 @@
 export component Key inherits Rectangle {
     in property <bool> is_black: false;
-    in property <string> note;
-    in property <int> octave;
+    in property <int> midi_note_number;
 
-    callback key_pressed(note: string, octave: int);
-    callback key_released(note: string, octave: int);
+    callback key_pressed(midi_note_number: int);
+    callback key_released(midi_note_number: int);
 
     width: root.is_black ? 44px : 70px;
     height: root.is_black ? 140px : 230px;
@@ -19,9 +18,9 @@ export component Key inherits Rectangle {
 
         pointer-event(event) => {
             if event.kind == PointerEventKind.down {
-                root.key_pressed(note, octave);
+                root.key_pressed(midi_note_number);
             } else if event.kind == PointerEventKind.up {
-                root.key_released(note, octave);
+                root.key_released(midi_note_number);
             }
         }
     }

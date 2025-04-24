@@ -11,7 +11,7 @@ mod oscillator;
 mod envelope;
 
 use audio_engine::AudioEngine;
-use gui::run;
+use gui::GuiController;
 use oscillator::Waveform;
 use messages::{OscillatorMsg, SynthMsg};
 use synthesizer::Synthesizer;
@@ -26,7 +26,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     audio.play()?;
 
-    run(&audio);
+    let gui = GuiController::new(&audio);
+    gui.run_gui();
 
     Ok(())
 }
