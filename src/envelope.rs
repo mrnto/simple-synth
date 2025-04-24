@@ -9,7 +9,7 @@ const MAX_SUSTAIN_LEVEL: f32 = 1.0;
 const MAX_RELEASE_TIME: f32 = 10.0;
 
 #[derive(PartialEq)]
-enum EnvelopeState {
+enum EnvelopeStage {
     Attack,
     Decay,
     Sustain,
@@ -17,96 +17,88 @@ enum EnvelopeState {
     Idle,
 }
 
+// TODO: exponential; setters when note played
 pub struct Envelope {
-    attack: f32,
-    decay: f32,
-    sustain: f32,
-    release: f32,
-    delta_time: f32,
-    time: f32,
-    state: EnvelopeState,
+    sample_rate: u32,
+    attack_rate: u32,
+    decay_rate: u32,
+    release_rate: u32,
+    sustain_level: f32,
+    level: f32,
+    stage: EnvelopeStage,
 }
 
 impl Envelope {
     pub fn new(sample_rate: u32) -> Self {
         Self {
-            attack: DEFAULT_ATTACK,
-            decay: DEFAULT_DECAY,
-            sustain: DEFAULT_SUSTAIN,
-            release: DEFAULT_RELEASE,
-            delta_time: 1.0 / sample_rate as f32,
-            time: 0.0,
-            state: EnvelopeState::Idle,
+            sample_rate,
+            attack_rate: (DEFAULT_ATTACK * sample_rate as f32).round() as u32,
+            decay_rate: (DEFAULT_DECAY * sample_rate as f32).round() as u32,
+            sustain_level: DEFAULT_SUSTAIN,
+            release_rate: (DEFAULT_RELEASE * sample_rate as f32).round() as u32,
+            level: 0.0,
+            stage: EnvelopeStage::Idle,
         }
     }
 
     pub fn process(&mut self) -> f32 {
-        self.time += self.delta_time;
-
-        match self.state {
-            EnvelopeState::Attack => {
-                if self.time >= self.attack {
-                    self.state = EnvelopeState::Decay;
+        match self.stage {
+            EnvelopeStage::Attack => {
+                self.level += 1.0 / self.attack_rate as f32;
+                if self.level >= 1.0 {
+                    self.level = 1.0;
+                    self.stage = EnvelopeStage::Decay;
                 }
-                
-                self.time / self.attack
             },
-            EnvelopeState::Decay => {
-                if self.time >= (self.attack + self.decay) {
-                    self.state = EnvelopeState::Sustain;
+            EnvelopeStage::Decay => {
+                self.level -= 1.0 / self.decay_rate as f32;
+                if self.level <= self.sustain_level {
+                    self.level = self.sustain_level;
+                    self.stage = EnvelopeStage::Sustain;
                 }
-                
-                1.0 - ((self.time - self.attack) / self.decay) * (1.0 - self.sustain)
             },
-            EnvelopeState::Sustain => self.sustain,
-            EnvelopeState::Release => {
-                if self.time >= self.release {
-                    self.state = EnvelopeState::Idle;
+            EnvelopeStage::Sustain => {},
+            EnvelopeStage::Release => {
+                self.level -= 1.0 / self.release_rate as f32;
+                if self.level <= 0.0 {
+                    self.level = 0.0;
+                    self.stage = EnvelopeStage::Idle;
                 }
-
-                // self.sustain * (1.0 - self.time / self.release)
-                // TODO: FIX "pops" on fast release
-                self.sustain * (1.0 - (self.time / self.release).powf(2.0))
             },
-            EnvelopeState::Idle => 0.0,
+            EnvelopeStage::Idle => {},
         }
+        
+        self.level
     }
 
     pub fn start_attack(&mut self) {
-        self.state = EnvelopeState::Attack;
-        self.time = 0.0;
+        self.stage = EnvelopeStage::Attack;
     }
 
     pub fn start_release(&mut self) {
-        self.state = EnvelopeState::Release;
-        self.time = 0.0;
-    }
-
-    pub fn get_adsr(&self) -> (f32, f32, f32, f32) {
-        (self.attack, self.decay, self.sustain, self.release)
+        self.stage = EnvelopeStage::Release;
     }
 
     pub fn set_attack(&mut self, attack: f32) {
-        self.attack = attack.clamp(0.0, MAX_ATTACK_TIME);
+        let attack = attack.clamp(0.0, MAX_ATTACK_TIME);
+        self.attack_rate = (attack * self.sample_rate as f32).round() as u32;
     }
 
     pub fn set_decay(&mut self, decay: f32) {
-        self.decay = decay.clamp(0.0, MAX_DECAY_TIME);
+        let decay = decay.clamp(0.0, MAX_DECAY_TIME);
+        self.decay_rate = (decay * self.sample_rate as f32).round() as u32;
     }
 
     pub fn set_sustain(&mut self, sustain: f32) {
-        self.sustain = sustain.clamp(0.0, MAX_SUSTAIN_LEVEL);
+        self.sustain_level = sustain.clamp(0.0, MAX_SUSTAIN_LEVEL);
     }
 
     pub fn set_release(&mut self, release: f32) {
-        self.release = release.clamp(0.0, MAX_RELEASE_TIME);
+        let release = release.clamp(0.0, MAX_RELEASE_TIME);
+        self.release_rate = (release * self.sample_rate as f32).round() as u32;
     }
 
-    pub fn set_sample_rate(&mut self, sample_rate: u32) {
-        if sample_rate <= 0 {
-            return;
-        }
-
-        self.delta_time = 1.0 / sample_rate as f32;
+    pub fn is_idle(&self) -> bool {
+        self.stage == EnvelopeStage::Idle
     }
 }

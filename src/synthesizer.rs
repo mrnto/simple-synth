@@ -53,7 +53,7 @@ impl Synthesizer {
                     },
                     OscillatorMsg::SetSampleRate(sample_rate) => {
                         if let Some(ref mut osc) = self.oscillator {
-                            osc.set_sample_rate(sample_rate)
+                            // osc.set_sample_rate(sample_rate)
                         }
                     },
                     OscillatorMsg::SetOscillator(sample_rate, waveform, frequency) => {

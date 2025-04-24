@@ -1,7 +1,7 @@
 use rand::random;
 use std::f32::consts::PI;
 
-#[derive(PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum Waveform {
     Sine,
     Square,
@@ -10,19 +10,20 @@ pub enum Waveform {
     Noise,
 }
 
+// TODO: implement wavetables
 pub struct Oscillator {
-    frequency: f32,
-    phase: f32,
     sample_rate: u32,
+    phase: f32,
+    frequency: f32,
     waveform: Waveform,
 }
 
 impl Oscillator {
     pub fn new(sample_rate: u32) -> Self {
         Self {
-            frequency: 440.0,
-            phase: 0.0,
             sample_rate,
+            phase: 0.0,
+            frequency: 440.0,
             waveform: Waveform::Sine,
         }
     }
@@ -42,28 +43,14 @@ impl Oscillator {
         sample
     }
 
-    // TODO: Fix "pops" when reset
     pub fn set_frequency(&mut self, frequency: f32) {
         self.frequency = frequency.clamp(0.0, self.sample_rate as f32 / 2.0);
-        // self.phase = 0.0;
     }
 
-    // TODO: Fix "pops" when reset
     pub fn set_waveform(&mut self, waveform: Waveform) {
         if self.waveform != waveform {
             self.waveform = waveform;
-            // self.phase = 0.0;
         }
-    }
-
-    // TODO
-    pub fn set_sample_rate(&mut self, sample_rate: u32) {
-        if sample_rate <= 0 {
-            return;
-        }
-        
-        self.sample_rate = sample_rate;
-        self.frequency = 0.0;
     }
 
     fn generate_sine(&self) -> f32 {
@@ -87,6 +74,6 @@ impl Oscillator {
     }
 
     fn generate_noise(&self) -> f32 {
-        random::<f32>() * 2.0 - 1.0
+        2.0 * random::<f32>() - 1.0
     }
 }

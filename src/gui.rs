@@ -21,22 +21,19 @@ fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
         let tx_clone = audio.clone_sender();
         move |attack| {
             let attack_time = normalize_to_time(attack);
-            println!("attack: {}", attack);
-            println!("Normalized from 10ms to 10sec: {}", attack_time);
-            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetAttack(attack_time/100.0))).unwrap();
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetAttack(attack_time))).unwrap();
         }
     });
     view_handle.global::<ControlsAdapter>().on_decay_changed({
         let tx_clone = audio.clone_sender();
         move |decay| {
             let decay_time = normalize_to_time(decay);
-            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay_time/100.0))).unwrap();
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay_time))).unwrap();
         }
     });
     view_handle.global::<ControlsAdapter>().on_sustain_changed({
         let tx_clone = audio.clone_sender();
         move |sustain| {
-            println!("Sustain level: {}", sustain);
             tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetSustain(sustain))).unwrap();
         }
     });
@@ -44,7 +41,7 @@ fn connect_view_to_controller(view_handle: &SynthWindow, audio: &AudioEngine) {
         let tx_clone = audio.clone_sender();
         move |release| {
             let release_time = normalize_to_time(release);
-            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release_time/100.0))).unwrap();
+            tx_clone.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release_time))).unwrap();
         }
     });
 
@@ -113,12 +110,12 @@ fn note_to_semitone(note: &str) -> Result<i32, String> {
 
 fn normalize_to_time(y: f32) -> f32 {
     let breakpoints = vec![
-        (10.0, 0.0),    // 10ms -> 0
-        (200.0, 0.2),   // 200ms -> 0.2
-        (600.0, 0.4),   // 600ms -> 0.4
-        (1000.0, 0.6),  // 1 sec -> 0.6
-        (5000.0, 0.8),  // 5 sec -> 0.8
-        (10000.0, 1.0), // 10 sec -> 1
+        (0.01, 0.0),    // 10ms -> 0
+        (0.2, 0.2),   // 200ms -> 0.2
+        (0.6, 0.4),   // 600ms -> 0.4
+        (1.0, 0.6),  // 1 sec -> 0.6
+        (5.0, 0.8),  // 5 sec -> 0.8
+        (10.0, 1.0), // 10 sec -> 1
     ];
 
     for i in 0..breakpoints.len() - 1 {
@@ -130,5 +127,5 @@ fn normalize_to_time(y: f32) -> f32 {
         }
     }
 
-    10000.0
+    10.0
 }
