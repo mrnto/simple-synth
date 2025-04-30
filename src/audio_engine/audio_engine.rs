@@ -7,7 +7,8 @@ use cpal::{
 };
 use std::sync::mpsc::{self, Receiver, Sender};
 use crate::{
-    error::DeviceSetupError,
+    // error::DeviceSetupError,
+    audio_engine::DeviceSetupError,
     messages::SynthMsg,
     synthesizer::Synthesizer,
 };

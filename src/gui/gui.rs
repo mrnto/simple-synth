@@ -1,7 +1,7 @@
 use crate::{
     audio_engine::AudioEngine,
     messages::{EnvelopeMsg, OscillatorMsg, SynthMsg},
-    waveform::Waveform,
+    synthesizer::Waveform,
 };
 use std::sync::mpsc::Sender;
 

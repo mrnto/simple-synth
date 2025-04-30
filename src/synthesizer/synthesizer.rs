@@ -1,6 +1,6 @@
 use crate::{
     messages::{EnvelopeMsg, OscillatorMsg, SynthMsg},
-    voice_manager::VoiceManager,
+    synthesizer::voice_manager::VoiceManager,
 };
 
 pub struct Synthesizer {

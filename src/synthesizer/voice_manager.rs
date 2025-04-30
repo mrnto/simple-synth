@@ -1,4 +1,7 @@
-use crate::{voice::Voice, waveform::Waveform};
+use crate::{
+    synthesizer::voice::Voice,
+    synthesizer::Waveform
+};
 
 const MAX_VOICES: usize = 16;
 

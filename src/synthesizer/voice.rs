@@ -1,7 +1,7 @@
 use crate::{
-    envelope::Envelope,
-    oscillator::Oscillator,
-    waveform::Waveform,
+    synthesizer::envelope::Envelope,
+    synthesizer::oscillator::Oscillator,
+    synthesizer::Waveform,
 };
 
 pub struct Voice {

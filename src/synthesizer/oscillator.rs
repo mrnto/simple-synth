@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 use rand::random;
-use crate::waveform::Waveform;
+use crate::synthesizer::Waveform;
 
 // TODO: implement wavetables
 pub struct Oscillator {

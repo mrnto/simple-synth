@@ -1,4 +1,4 @@
-use crate::waveform::Waveform;
+use crate::synthesizer::Waveform;
 
 pub enum SynthMsg {
     EnvelopeMsg(EnvelopeMsg),
