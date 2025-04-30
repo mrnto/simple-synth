@@ -1,64 +1,47 @@
 use crate::{
-    envelope::Envelope,
     messages::{EnvelopeMsg, OscillatorMsg, SynthMsg},
-    oscillator::{Oscillator, Waveform}
+    voice_manager::VoiceManager,
 };
 
 pub struct Synthesizer {
-    // oscillators: Vec<Option<Oscillator>>,
-    // envelopes: Vec<Envelope>,
-    oscillator: Option<Oscillator>,
-    envelope: Envelope,
+    voice_manager: VoiceManager,
 }
 
 impl Synthesizer {
     pub fn new(sample_rate: u32) -> Self {
         Self {
-            oscillator: Some(Oscillator::new(sample_rate)),
-            envelope: Envelope::new(sample_rate),
+            voice_manager: VoiceManager::new(sample_rate),
         }
     }
 
     pub fn generate(&mut self) -> f32 {
-        self.oscillator.as_mut().map_or(0.0, |osc| osc.tick() * self.envelope.process())
+        self.voice_manager.process_voices()
     }
 
     pub fn handle_message(&mut self, message: SynthMsg) {
         match message {
             SynthMsg::EnvelopeMsg(env_msg) => {
                 match env_msg {
-                    EnvelopeMsg::SetAttack(attack) => self.envelope.set_attack(attack),
-                    EnvelopeMsg::SetDecay(decay) => self.envelope.set_decay(decay),
-                    EnvelopeMsg::SetSustain(sustain) => self.envelope.set_sustain(sustain),
-                    EnvelopeMsg::SetRelease(release) => self.envelope.set_release(release),
+                    EnvelopeMsg::SetAttack(attack) => self.voice_manager.set_attack(attack),
+                    EnvelopeMsg::SetDecay(decay) => self.voice_manager.set_decay(decay),
+                    EnvelopeMsg::SetSustain(sustain) => self.voice_manager.set_sustain(sustain),
+                    EnvelopeMsg::SetRelease(release) => self.voice_manager.set_release(release),
                 }
             },
             SynthMsg::OscillatorMsg(osc_msg) => {
                 match osc_msg {
-                    OscillatorMsg::SetFrequency(frequency) => {
-                        if let Some(ref mut osc) = self.oscillator {
-                            if frequency == 0.0 {   
-                                self.envelope.start_release();
-                            } else {
-                                self.envelope.start_attack();
-                                osc.set_frequency(frequency);
-                            }
-                        }
+                    OscillatorMsg::NoteOn(frequency) => {
+                        self.voice_manager.note_on(frequency);
+                    },
+                    OscillatorMsg::NoteOff(frequency) => {
+                        self.voice_manager.note_off(frequency);
                     },
                     OscillatorMsg::SetWaveform(waveform) => 
                     {
-                        if let Some(ref mut osc) = self.oscillator {
-                            osc.set_waveform(waveform)
-                        }
-                    },
-                    OscillatorMsg::SetSampleRate(sample_rate) => {
-                        if let Some(ref mut osc) = self.oscillator {
-                            // osc.set_sample_rate(sample_rate)
-                        }
+                        self.voice_manager.set_waveform(waveform);
                     },
                     OscillatorMsg::SetOscillator(sample_rate, waveform, frequency) => {
-                        self.oscillator = Some(Oscillator::new(sample_rate))
-                        // then set
+                        // 
                     },
                 }
             },

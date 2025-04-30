@@ -9,10 +9,13 @@ mod synthesizer;
 mod messages;
 mod oscillator;
 mod envelope;
+mod voice;
+mod voice_manager;
+mod waveform;
 
 use audio_engine::AudioEngine;
 use gui::GuiController;
-use oscillator::Waveform;
+use waveform::Waveform;
 use messages::{OscillatorMsg, SynthMsg};
 use synthesizer::Synthesizer;
 
@@ -22,7 +25,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let tx_clone = audio.clone_sender();
     let rate = audio.sample_rate();
-    let _ = tx_clone.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetOscillator(rate, Waveform::Sine, 0.0)));
 
     audio.play()?;
 

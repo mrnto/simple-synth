@@ -1,4 +1,4 @@
-use crate::oscillator::Waveform;
+use crate::waveform::Waveform;
 
 pub enum SynthMsg {
     EnvelopeMsg(EnvelopeMsg),
@@ -13,8 +13,9 @@ pub enum EnvelopeMsg {
 }
 
 pub enum OscillatorMsg {
-    SetFrequency(f32),
+    // TODO
+    NoteOn(u8),
+    NoteOff(u8),
     SetWaveform(Waveform),
-    SetSampleRate(u32),
     SetOscillator(u32, Waveform, f32),
 }

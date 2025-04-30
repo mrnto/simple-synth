@@ -1,7 +1,7 @@
 use crate::{
     audio_engine::AudioEngine,
     messages::{EnvelopeMsg, OscillatorMsg, SynthMsg},
-    oscillator::Waveform
+    waveform::Waveform,
 };
 use std::sync::mpsc::Sender;
 
@@ -71,22 +71,16 @@ impl GuiController {
         keyboard.on_key_pressed({
             let tx = self.sender.clone();
             move |note_number| {
-                let frequency = midi_note_to_frequency(note_number as u8);
-                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetFrequency(frequency))).unwrap();
-                println!("{} {}", note_number, frequency);
+                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::NoteOn(note_number as u8))).unwrap();
             }
         });
         keyboard.on_key_released({
             let tx = self.sender.clone();
             move |note_number| {
-                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::SetFrequency(0.0))).unwrap();
+                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::NoteOff(note_number as u8))).unwrap();
             }
         });
     }
-}
-
-fn midi_note_to_frequency(note_number: u8) -> f32 {
-    440.0 * 2.0_f32.powf((note_number as f32 - 69.0) / 12.0)
 }
 
 fn normalize_to_time(y: f32) -> f32 {

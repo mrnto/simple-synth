@@ -17,7 +17,7 @@ enum EnvelopeStage {
     Idle,
 }
 
-// TODO: exponential; setters when note played
+// TODO: exponential; adsr change when note is played
 pub struct Envelope {
     sample_rate: u32,
     attack_rate: u32,
