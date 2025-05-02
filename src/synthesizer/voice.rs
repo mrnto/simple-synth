@@ -1,5 +1,6 @@
 use crate::{
     synthesizer::envelope::Envelope,
+    synthesizer::EnvelopeStage,
     synthesizer::oscillator::Oscillator,
     synthesizer::Waveform,
 };
@@ -10,7 +11,7 @@ pub struct Voice {
     envelope1: Envelope,
     // envelope2: Envelope,
     note_number: Option<u8>,
-    // velocity: u8,
+    // velocity: Option<u8>,
     active: bool,
 }
 
@@ -22,6 +23,7 @@ impl Voice {
             envelope1: Envelope::new(sample_rate),
             // envelope2: Envelope::new(sample_rate),
             note_number: None,
+            // velocity: None,
             active: false,
         }
     }
@@ -30,69 +32,52 @@ impl Voice {
         if !self.active { return 0.0; }
 
         if self.envelope1.is_idle() == true {
-            self.free_voice();
+            self.active = false;
+            println!("Free note {}", self.note_number.unwrap_or(0));
             self.note_number = None;
-            println!("free note");
+            return 0.0;
         }
 
         self.oscillator1.tick() * self.envelope1.process()
+        // self.oscillator1.tick() * self.envelope1.process() * (self.velocity / 127.0)
     }
 
-    pub fn is_active(&self) -> bool {
-        self.active
-    }
-
-    // tmp
-    pub fn get_note(&self) -> Option<u8> {
-        self.note_number
-    }
-
-    // TODO
     pub fn note_on(&mut self, note_number: u8) {
-        self.oscillator1.set_frequency(self.midi_note_to_frequency(note_number));
-        self.envelope1.start_attack();
-        self.active = true;
-        self.note_number = Some(note_number);
+        if !self.active {
+            println!("Start note {}", note_number);
+            let frequency = self.midi_note_to_frequency(note_number);
+
+            self.oscillator1.set_frequency(frequency);
+            self.envelope1.start_attack();
+            self.note_number = Some(note_number);
+            self.active = true;
+        } else {
+            println!("Retrigger note {}", note_number);
+            self.envelope1.start_attack();
+        }
     }
     
     pub fn note_off(&mut self, note_number: u8) {
-        self.envelope1.start_release();
+        if self.active {
+            println!("Note {} {} release", note_number, self.note_number.unwrap_or(0));
+            self.envelope1.start_release();
+        }
     }
-    
-    pub fn set_frequency(&mut self, frequency: f32) {
-        self.oscillator1.set_frequency(frequency);
+
+    pub fn active(&self) -> bool {
+        self.active
+    }
+
+    pub fn note_number(&self) -> Option<u8> {
+        self.note_number
     }
 
     pub fn set_waveform(&mut self, waveform: Waveform) {
         self.oscillator1.set_waveform(waveform);
     }
 
-    pub fn start_attack(&mut self) {
-        self.envelope1.start_attack();
-    }
-
-    pub fn start_release(&mut self) {
-        self.envelope1.start_release();
-    }
-
-    pub fn set_attack(&mut self, attack: f32) {
-        self.envelope1.set_attack(attack);
-    }
-
-    pub fn set_decay(&mut self, decay: f32) {
-        self.envelope1.set_decay(decay);
-    }
-
-    pub fn set_sustain(&mut self, sustain: f32) {
-        self.envelope1.set_sustain(sustain);
-    }
-
-    pub fn set_release(&mut self, release: f32) {
-        self.envelope1.set_release(release);
-    }
-
-    fn free_voice(&mut self) {
-        self.active = false;
+    pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
+        self.envelope1.set_stage_value(stage, value);
     }
 
     fn midi_note_to_frequency(&self, note_number: u8) -> f32 {

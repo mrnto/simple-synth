@@ -5,7 +5,7 @@
 mod audio_engine;
 mod gui;
 mod messages;
-// mod error;
+mod error;
 mod synthesizer;
 
 use audio_engine::AudioEngine;

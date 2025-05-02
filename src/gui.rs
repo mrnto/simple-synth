@@ -1,7 +1,7 @@
 use crate::{
     audio_engine::AudioEngine,
     messages::{EnvelopeMsg, OscillatorMsg, SynthMsg},
-    synthesizer::Waveform,
+    synthesizer::{EnvelopeStage, Waveform},
 };
 use std::sync::mpsc::Sender;
 
@@ -31,27 +31,27 @@ impl GuiController {
             let tx = self.sender.clone();
             move |attack| {
                 let attack_time = normalize_to_time(attack);
-                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetAttack(attack_time))).unwrap();
+                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetStage(EnvelopeStage::Attack, attack_time))).unwrap();
             }
         });
         controls.on_decay_changed({
             let tx = self.sender.clone();
             move |decay| {
                 let decay_time = normalize_to_time(decay);
-                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetDecay(decay_time))).unwrap();
+                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetStage(EnvelopeStage::Decay, decay_time))).unwrap();
             }
         });
         controls.on_sustain_changed({
             let tx = self.sender.clone();
             move |sustain| {
-                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetSustain(sustain))).unwrap();
+                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetStage(EnvelopeStage::Sustain, sustain))).unwrap();
             }
         });
         controls.on_release_changed({
             let tx = self.sender.clone();
             move |release| {
                 let release_time = normalize_to_time(release);
-                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetRelease(release_time))).unwrap();
+                tx.send(SynthMsg::EnvelopeMsg(EnvelopeMsg::SetStage(EnvelopeStage::Release, release_time))).unwrap();
             }
         });
         controls.on_waveform_selected({
@@ -71,13 +71,13 @@ impl GuiController {
         keyboard.on_key_pressed({
             let tx = self.sender.clone();
             move |note_number| {
-                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::NoteOn(note_number as u8))).unwrap();
+                tx.send(SynthMsg::NoteOn(note_number as u8)).unwrap();
             }
         });
         keyboard.on_key_released({
             let tx = self.sender.clone();
             move |note_number| {
-                tx.send(SynthMsg::OscillatorMsg(OscillatorMsg::NoteOff(note_number as u8))).unwrap();
+                tx.send(SynthMsg::NoteOff(note_number as u8)).unwrap();
             }
         });
     }

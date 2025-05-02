@@ -8,8 +8,8 @@ const MAX_DECAY_TIME: f32 = 10.0;
 const MAX_SUSTAIN_LEVEL: f32 = 1.0;
 const MAX_RELEASE_TIME: f32 = 10.0;
 
-#[derive(PartialEq)]
-enum EnvelopeStage {
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum EnvelopeStage {
     Attack,
     Decay,
     Sustain,
@@ -79,23 +79,25 @@ impl Envelope {
         self.stage = EnvelopeStage::Release;
     }
 
-    pub fn set_attack(&mut self, attack: f32) {
-        let attack = attack.clamp(0.0, MAX_ATTACK_TIME);
-        self.attack_rate = (attack * self.sample_rate as f32).round() as u32;
-    }
-
-    pub fn set_decay(&mut self, decay: f32) {
-        let decay = decay.clamp(0.0, MAX_DECAY_TIME);
-        self.decay_rate = (decay * self.sample_rate as f32).round() as u32;
-    }
-
-    pub fn set_sustain(&mut self, sustain: f32) {
-        self.sustain_level = sustain.clamp(0.0, MAX_SUSTAIN_LEVEL);
-    }
-
-    pub fn set_release(&mut self, release: f32) {
-        let release = release.clamp(0.0, MAX_RELEASE_TIME);
-        self.release_rate = (release * self.sample_rate as f32).round() as u32;
+    pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
+        match stage {
+            EnvelopeStage::Attack => {
+                let attack = value.clamp(0.0, MAX_ATTACK_TIME);
+                self.attack_rate = (attack * self.sample_rate as f32).round() as u32;
+            },
+            EnvelopeStage::Decay => {
+                let decay = value.clamp(0.0, MAX_DECAY_TIME);
+                self.decay_rate = (decay * self.sample_rate as f32).round() as u32;
+            },
+            EnvelopeStage::Sustain => {
+                self.sustain_level = value.clamp(0.0, MAX_SUSTAIN_LEVEL);
+            },
+            EnvelopeStage::Release => {
+                let release = value.clamp(0.0, MAX_RELEASE_TIME);
+                self.release_rate = (release * self.sample_rate as f32).round() as u32;
+            },
+            EnvelopeStage::Idle => (), 
+        }
     }
 
     pub fn is_idle(&self) -> bool {

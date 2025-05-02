@@ -3,7 +3,8 @@ mod oscillator;
 mod synthesizer;
 mod voice_manager;
 mod voice;
-pub mod waveform;
+mod waveform;
 
+pub use envelope::EnvelopeStage;
 pub use synthesizer::Synthesizer;
-pub use waveform::{Waveform, ParseWaveformError};
+pub use waveform::Waveform;

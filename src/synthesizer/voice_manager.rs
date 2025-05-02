@@ -1,4 +1,5 @@
 use crate::{
+    synthesizer::EnvelopeStage,
     synthesizer::voice::Voice,
     synthesizer::Waveform
 };
@@ -6,6 +7,7 @@ use crate::{
 const MAX_VOICES: usize = 16;
 
 // TODO: fixed-size array
+// TODO: reduce redundant checks (HashMap, VoicePool, etc.)
 pub struct VoiceManager {
     voices: Vec<Voice>,
 }
@@ -22,7 +24,9 @@ impl VoiceManager {
     }
 
     pub fn note_on(&mut self, note_number: u8) {
-        if let Some(free_voice) = self.find_free_voice() {
+        if let Some(existing_voice) = self.find_voice_by_note(note_number) {
+            existing_voice.note_on(note_number);
+        } else if let Some(free_voice) = self.find_free_voice() {
             free_voice.note_on(note_number);
         }
     }
@@ -33,48 +37,23 @@ impl VoiceManager {
         }
     }
 
-    // meh...
-    pub fn set_frequency(&mut self, frequency: f32) {
-        for voice in &mut self.voices {
-            voice.set_frequency(frequency);
-        }
-    }
-
     pub fn set_waveform(&mut self, waveform: Waveform) {
         for voice in &mut self.voices {
             voice.set_waveform(waveform);
         }
     }
 
-    pub fn set_attack(&mut self, attack: f32) {
+    pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
         for voice in &mut self.voices {
-            voice.set_attack(attack);
-        }
-    }
-
-    pub fn set_decay(&mut self, decay: f32) {
-        for voice in &mut self.voices {
-            voice.set_decay(decay);
-        }
-    }
-
-    pub fn set_sustain(&mut self, sustain: f32) {
-        for voice in &mut self.voices {
-            voice.set_sustain(sustain);
-        }
-    }
-
-    pub fn set_release(&mut self, release: f32) {
-        for voice in &mut self.voices {
-            voice.set_release(release);
+            voice.set_stage_value(stage, value);
         }
     }
 
     fn find_free_voice(&mut self) -> Option<&mut Voice> {
-        self.voices.iter_mut().find(|v| !v.is_active())
+        self.voices.iter_mut().find(|v| !v.active())
     }
 
     fn find_voice_by_note(&mut self, note_number: u8) -> Option<&mut Voice> {
-        self.voices.iter_mut().find(|v| v.is_active() && v.get_note() == Some(note_number))
+        self.voices.iter_mut().find(|v| v.active() && v.note_number() == Some(note_number))
     }
 }

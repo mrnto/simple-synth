@@ -1,6 +1,7 @@
 use std::str::FromStr;
+use crate::error::ParseWaveformError;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Waveform {
     Sine,
     Square,
@@ -9,18 +10,16 @@ pub enum Waveform {
     Noise,
 }
 
-pub struct ParseWaveformError;
-
 impl FromStr for Waveform {
     type Err = ParseWaveformError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "Sine" => Ok(Self::Sine),
-            "Square" => Ok(Self::Square),
-            "Triangle" => Ok(Self::Triangle),
-            "Sawtooth" => Ok(Self::Sawtooth),
-            "Noise" => Ok(Self::Noise),
+        match s.to_lowercase().as_str() {
+            "sine" => Ok(Self::Sine),
+            "square" => Ok(Self::Square),
+            "triangle" => Ok(Self::Triangle),
+            "sawtooth" => Ok(Self::Sawtooth),
+            "noise" => Ok(Self::Noise),
             _ => Err(ParseWaveformError),
         }
     }

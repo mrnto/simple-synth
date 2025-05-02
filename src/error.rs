@@ -32,3 +32,14 @@ impl From<DeviceNameError> for DeviceSetupError {
         DeviceSetupError::DeviceNameError(err)
     }
 }
+
+#[derive(Copy, Clone, Debug)]
+pub struct ParseWaveformError;
+
+impl Display for ParseWaveformError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("Invalid waveform.")
+    }
+}
+
+impl Error for ParseWaveformError {}

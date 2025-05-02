@@ -1,3 +1,4 @@
+use std::sync::mpsc::{self, Receiver, Sender};
 use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
     BuildStreamError, PlayStreamError, PauseStreamError,
@@ -5,10 +6,8 @@ use cpal::{
     Host, Device, SupportedStreamConfig, Stream, OutputCallbackInfo,
     default_host,
 };
-use std::sync::mpsc::{self, Receiver, Sender};
 use crate::{
-    // error::DeviceSetupError,
-    audio_engine::DeviceSetupError,
+    error::DeviceSetupError,
     messages::SynthMsg,
     synthesizer::Synthesizer,
 };
