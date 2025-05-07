@@ -59,10 +59,6 @@ export component Knob inherits Rectangle {
         x: root.width / 2;
         y: root.height / 2;
 
-        // Text {
-        //     text: normalize_angle_range(root.angle);
-        // }
-
         Rectangle {
             property <float> r: 0.5;
             x: r * root.width / 2 * root.angle.cos() - self.width / 2;
