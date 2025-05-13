@@ -13,12 +13,12 @@ use gui::GuiController;
 use synthesizer::Synthesizer;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let synth = Synthesizer::new(44100);
-    
-    let audio = AudioEngine::new(synth)?;
+    let mut audio = AudioEngine::new()?;
+    let synth = Synthesizer::new(audio.sample_rate());
+    audio.add_synth(synth)?;
     audio.play()?;
 
-    let gui = GuiController::new(audio.clone_sender());
+    let gui = GuiController::new(audio.clone_sender()?);
     gui.run_gui()?;
 
     Ok(())
