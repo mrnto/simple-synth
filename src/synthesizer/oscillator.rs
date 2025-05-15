@@ -26,8 +26,13 @@ impl Oscillator {
             Waveform::Square => self.generate_square(),
             Waveform::Triangle => self.generate_triangle(),
             Waveform::Sawtooth => self.generate_sawtooth(),
-            Waveform::Noise =>
-                if self.frequency == 0.0 { 0.0 } else { self.generate_noise() },
+            Waveform::Noise => {
+                if self.frequency == 0.0 {
+                    0.0
+                } else {
+                    self.generate_noise()
+                }
+            }
         };
 
         self.phase = (self.phase + self.frequency / self.sample_rate as f32).rem_euclid(1.0);
@@ -50,7 +55,11 @@ impl Oscillator {
     }
 
     fn generate_square(&self) -> f32 {
-        if self.phase < 0.5 { 1.0 } else { -1.0 }
+        if self.phase < 0.5 {
+            1.0
+        } else {
+            -1.0
+        }
     }
 
     fn generate_triangle(&self) -> f32 {

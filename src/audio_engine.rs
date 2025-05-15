@@ -8,17 +8,18 @@ use cpal::{
 };
 use crate::{
     error::AudioEngineError,
-    messages::SynthMsg,
-    synthesizer::Synthesizer,
+    commands::SynthCommand,
+    synthesizer::Synth,
 };
 
+// TODO: don't like it, needs a lot of improvements and changes
 #[allow(dead_code)]
 pub struct AudioEngine {
     host: Host,
     device: Device,
     config: SupportedStreamConfig,
     stream: Option<Stream>,
-    sender: Option<Sender<SynthMsg>>,
+    sender: Option<Sender<SynthCommand>>,
 }
 
 impl AudioEngine {
@@ -34,15 +35,15 @@ impl AudioEngine {
         })
     }
 
-    pub fn add_synth(&mut self, synthesizer: Synthesizer) -> Result<(), AudioEngineError> {
+    pub fn add_synth(&mut self, synth: Synth) -> Result<(), AudioEngineError> {
         let (tx, rx) = mpsc::channel();
         self.sender = Some(tx);
-        self.stream_setup(synthesizer, rx)?;
+        self.stream_setup(synth, rx)?;
 
         Ok(())
     }
 
-    pub fn clone_sender(&self) -> Result<Sender<SynthMsg>, AudioEngineError> {
+    pub fn clone_sender(&self) -> Result<Sender<SynthCommand>, AudioEngineError> {
         self.sender.clone().ok_or(AudioEngineError::SenderUnavailable)
     }
 
@@ -78,11 +79,11 @@ impl AudioEngine {
         Ok((host, device, config))
     }
 
-    fn stream_setup(&mut self, synthesizer: Synthesizer, rx: Receiver<SynthMsg>) -> Result<(), AudioEngineError> {
+    fn stream_setup(&mut self, synth: Synth, rx: Receiver<SynthCommand>) -> Result<(), AudioEngineError> {
         let stream = match self.config.sample_format() {
-            SampleFormat::F32 => self.make_stream::<f32>(synthesizer, rx)?,
-            SampleFormat::I16 => self.make_stream::<i16>(synthesizer, rx)?,
-            SampleFormat::U16 => self.make_stream::<u16>(synthesizer, rx)?,
+            SampleFormat::F32 => self.make_stream::<f32>(synth, rx)?,
+            SampleFormat::I16 => self.make_stream::<i16>(synth, rx)?,
+            SampleFormat::U16 => self.make_stream::<u16>(synth, rx)?,
             _ => return Err(AudioEngineError::BuildStreamError(BuildStreamError::StreamConfigNotSupported)),
         };
         self.stream = Some(stream);
@@ -90,7 +91,7 @@ impl AudioEngine {
         Ok(())
     }
 
-    fn make_stream<T>(&mut self, mut synthesizer: Synthesizer, rx: Receiver<SynthMsg>) -> Result<Stream, AudioEngineError>
+    fn make_stream<T>(&mut self, mut synth: Synth, rx: Receiver<SynthCommand>) -> Result<Stream, AudioEngineError>
     where 
         T: SizedSample + FromSample<f32>,
     {
@@ -101,13 +102,13 @@ impl AudioEngine {
         let stream = self.device.build_output_stream(
             &config,
             move |output: &mut [T], _: &OutputCallbackInfo| {
-                while let Ok(message) = rx.try_recv() {
-                    synthesizer.handle_message(message);
+                while let Ok(command) = rx.try_recv() {
+                    synth.handle_command(command);
                 }
 
                 // self.process_frame(output, channels)
                 for frame in output.chunks_mut(channels) {
-                    let value = T::from_sample(synthesizer.generate());
+                    let value = T::from_sample(synth.generate());
 
                     for sample in frame.iter_mut() {
                         *sample = value;

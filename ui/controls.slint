@@ -1,4 +1,4 @@
-import { ComboBox } from "std-widgets.slint";
+import { ComboBox, GroupBox, HorizontalBox, VerticalBox } from "std-widgets.slint";
 import { Knob } from "knob.slint";
 
 export global ControlsAdapter {
@@ -7,6 +7,9 @@ export global ControlsAdapter {
     callback decay_changed(decay: float);
     callback sustain_changed(sustain: float);
     callback release_changed(release: float);
+    callback cutoff_changed(cutoff: float);
+    callback resonance_changed(resonance: float);
+    callback filter_mode_selected(mode: string);
 
     // pure public function normalize_angle_range(angle: angle) -> float {
     //     return (angle - 60deg) / (120deg - 60deg);
@@ -22,11 +25,8 @@ export global ControlsAdapter {
     }
 }
 
-export component Controls {
-    width: option.width + hl.width;
-    height: option.height + hl.height;
-    
-    option := ComboBox {
+export component Controls inherits VerticalBox {
+    ComboBox {
         model: [
             @tr("Sine"),
             @tr("Square"),
@@ -40,28 +40,62 @@ export component Controls {
             ControlsAdapter.waveform_selected(waveform);
         }
     }
+
+    GroupBox {
+        title: @tr("Envelope");
+        vertical-stretch: 0;
+
+        HorizontalBox {
+            attack := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.attack_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
+            }
+            decay := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.decay_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
+            }
+            sustain := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.sustain_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
+            }
+            release := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.release_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
+            }
+        }
+    }
     
-    hl := HorizontalLayout {
-        width: attack.width * 4;
-        height: attack.height * 4;
-        attack := Knob {
-            angle_changed(angle) => {
-                ControlsAdapter.attack_changed(ControlsAdapter.normalize_angle_range(angle));
+    GroupBox {
+        title: @tr("Filter");
+        vertical-stretch: 0;
+
+        filter_mode := ComboBox {
+            model: [
+                @tr("Lowpass"),
+                @tr("Highpass"),
+                @tr("Bandpass"),
+            ];
+            current-index: 0;
+            
+            selected(mode) => {
+                ControlsAdapter.filter_mode_selected(mode);
             }
         }
-        decay := Knob {
-            angle_changed(angle) => {
-                ControlsAdapter.decay_changed(ControlsAdapter.normalize_angle_range(angle));
+
+        HorizontalBox {
+            cutoff := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.cutoff_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
             }
-        }
-        sustain := Knob {
-            angle_changed(angle) => {
-                ControlsAdapter.sustain_changed(ControlsAdapter.normalize_angle_range(angle));
-            }
-        }
-        release := Knob {
-            angle_changed(angle) => {
-                ControlsAdapter.release_changed(ControlsAdapter.normalize_angle_range(angle));
+            resonance := Knob {
+                angle_changed(angle) => {
+                    ControlsAdapter.resonance_changed(ControlsAdapter.normalize_angle_range(angle));
+                }
             }
         }
     }

@@ -4,12 +4,13 @@ Software synthesizer written in Rust using [CPAL](https://github.com/RustAudio/c
 ## Features
 - Oscillator with basic waveforms
 - Envelope generator (ADSR)
+- Filters (low-pass, high-pass, band-pass)
 - Polyphony
+- GUI
 - ~~Two oscillators per voice~~ *TODO*
 - ~~Low-frequency oscillator (LFO)~~ *TODO*
-- ~~Filters (low-pass, high-pass)~~ *TODO*
 - ~~MIDI input support~~ *TODO*
-- GUI
+- ~~Plugin (VST3, CLAP)~~ *TODO*
 
 ## Build and Run
 ### Prerequisites

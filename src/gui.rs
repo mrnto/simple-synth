@@ -1,18 +1,18 @@
 use std::sync::mpsc::Sender;
 use self::control_mapping::normalize_to_time;
 use crate::{
-    messages::SynthMsg,
-    synthesizer::{EnvelopeStage, Waveform},
+    commands::{SynthCommand, SynthParam},
+    synthesizer::{EnvelopeStage, FilterMode, Waveform},
 };
 
 slint::include_modules!();
 
 pub struct GuiController {
-    sender: Sender<SynthMsg>,
+    sender: Sender<SynthCommand>,
 }
 
 impl GuiController {
-    pub fn new(sender: Sender<SynthMsg>) -> Self {
+    pub fn new(sender: Sender<SynthCommand>) -> Self {
         Self {
             sender,
         }
@@ -23,7 +23,7 @@ impl GuiController {
 
         self.connect_controls(&view);
         self.connect_keyboard(&view);
-        
+
         view.run()?;
 
         Ok(())
@@ -31,7 +31,7 @@ impl GuiController {
 
     fn connect_controls(&self, view: &SynthWindow) {
         let controls = view.global::<ControlsAdapter>();
-        
+
         controls.on_attack_changed(self.handle_stage_change(EnvelopeStage::Attack, normalize_to_time));
         controls.on_decay_changed(self.handle_stage_change(EnvelopeStage::Decay, normalize_to_time));
         controls.on_sustain_changed(self.handle_stage_change(EnvelopeStage::Sustain, |x| x));
@@ -41,7 +41,7 @@ impl GuiController {
             let tx = self.sender.clone();
             move |waveform| {
                 if let Ok(waveform) = waveform.parse::<Waveform>() {
-                    if let Err(e) = tx.send(SynthMsg::SetWaveform(waveform)) {
+                    if let Err(e) = tx.send(SynthCommand::SetParam(SynthParam::Waveform(waveform))) {
                         eprintln!("[gui] Failed to send SetWaveform message: {}", e);
                     }
                 } else {
@@ -49,15 +49,44 @@ impl GuiController {
                 }
             }
         });
+        controls.on_filter_mode_selected({
+            let tx = self.sender.clone();
+            move |mode| {
+                if let Ok(mode) = mode.parse::<FilterMode>() {
+                    if let Err(e) = tx.send(SynthCommand::SetParam(SynthParam::FilterMode(mode))) {
+                        eprintln!("[gui] Failed to send SetFilterMode message: {}", e);
+                    }
+                } else {
+                    eprintln!("[gui] Invalid filter mode selected: {}", mode);
+                }
+            }
+        });
+
+        controls.on_cutoff_changed({
+            let tx = self.sender.clone();
+            move |value| {
+                if let Err(e) = tx.send(SynthCommand::SetParam(SynthParam::Cutoff(value))) {
+                    eprintln!("[gui] Failed to send SetCutoff message: {}", e);
+                }
+            }
+        });
+        controls.on_resonance_changed({
+            let tx = self.sender.clone();
+            move |value| {
+                if let Err(e) = tx.send(SynthCommand::SetParam(SynthParam::Resonance(value))) {
+                    eprintln!("[gui] Failed to send SetResonance message: {}", e);
+                }
+            }
+        });
     }
-    
+
     fn connect_keyboard(&self, view: &SynthWindow) {
         let keyboard = view.global::<KeyboardAdapter>();
-        
+
         keyboard.on_key_pressed({
             let tx = self.sender.clone();
             move |note_number| {
-                if let Err(e) = tx.send(SynthMsg::NoteOn(note_number as u8)) {
+                if let Err(e) = tx.send(SynthCommand::NoteOn(note_number as u8)) {
                     eprintln!("[gui] Failed to send NoteOn message: {}", e);
                 }
             }
@@ -65,7 +94,7 @@ impl GuiController {
         keyboard.on_key_released({
             let tx = self.sender.clone();
             move |note_number| {
-                if let Err(e) = tx.send(SynthMsg::NoteOff(note_number as u8)) {
+                if let Err(e) = tx.send(SynthCommand::NoteOff(note_number as u8)) {
                     eprintln!("[gui] Failed to send NoteOff message: {}", e);
                 }
             }
@@ -79,7 +108,7 @@ impl GuiController {
         let tx = self.sender.clone();
         move |value| {
             let time = f(value);
-            if let Err(e) = tx.send(SynthMsg::SetStage(stage, time)) {
+            if let Err(e) = tx.send(SynthCommand::SetParam(SynthParam::EnvelopeStage(stage, time))) {
                 eprintln!("[gui] Failed to send SetStage ({:?}) message: {}", stage, e);
             }
         }

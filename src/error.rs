@@ -1,8 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use cpal::{
-    BuildStreamError, DefaultStreamConfigError, DeviceNameError,
-    PlayStreamError, PauseStreamError
+    BuildStreamError, DefaultStreamConfigError, DeviceNameError, PauseStreamError, PlayStreamError,
 };
 
 #[derive(Debug)]
@@ -33,28 +32,38 @@ impl Display for AudioEngineError {
 impl Error for AudioEngineError {}
 
 macro_rules! impl_from {
-    ($src:ty, $variant:ident) => {
-        impl From<$src> for AudioEngineError {
-            fn from(err: $src) -> Self {
-                AudioEngineError::$variant(err)
+    ($target:ident: $($src:ty => $variant:ident),* $(,)?) => {
+        $(
+            impl From<$src> for $target {
+                fn from(err: $src) -> Self {
+                    $target::$variant(err)
+                }
             }
-        }
+        )*
     };
 }
 
-impl_from!(BuildStreamError, BuildStreamError);
-impl_from!(DefaultStreamConfigError, DefaultStreamConfigError);
-impl_from!(DeviceNameError, DeviceNameError);
-impl_from!(PlayStreamError, PlayStreamError);
-impl_from!(PauseStreamError, PauseStreamError);
+impl_from!(AudioEngineError:
+    BuildStreamError => BuildStreamError,
+    DefaultStreamConfigError => DefaultStreamConfigError,
+    DeviceNameError => DeviceNameError,
+    PlayStreamError => PlayStreamError,
+    PauseStreamError => PauseStreamError,
+);
 
-#[derive(Copy, Clone, Debug)]
-pub struct ParseWaveformError;
+#[derive(Debug)]
+pub enum SynthParseError {
+    InvalidWaveform,
+    InvalidFilterMode,
+}
 
-impl Display for ParseWaveformError {
+impl Display for SynthParseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Invalid waveform.")
+        match self {
+            Self::InvalidWaveform => f.write_str("Invalid waveform."),
+            Self::InvalidFilterMode => f.write_str("Invalid filter mode."),
+        }
     }
 }
 
-impl Error for ParseWaveformError {}
+impl Error for SynthParseError {}

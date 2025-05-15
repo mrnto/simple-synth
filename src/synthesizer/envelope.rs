@@ -1,3 +1,5 @@
+use crate::synthesizer::EnvelopeStage;
+
 const DEFAULT_ATTACK: f32 = 0.2;
 const DEFAULT_DECAY: f32 = 0.2;
 const DEFAULT_SUSTAIN: f32 = 0.8;
@@ -7,15 +9,6 @@ const MAX_ATTACK_TIME: f32 = 10.0;
 const MAX_DECAY_TIME: f32 = 10.0;
 const MAX_SUSTAIN_LEVEL: f32 = 1.0;
 const MAX_RELEASE_TIME: f32 = 10.0;
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum EnvelopeStage {
-    Attack,
-    Decay,
-    Sustain,
-    Release,
-    Idle,
-}
 
 // TODO: exponential; adsr change when note is played
 pub struct Envelope {

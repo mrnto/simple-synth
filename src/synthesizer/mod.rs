@@ -1,10 +1,14 @@
 mod envelope;
+mod envelope_stage;
+mod filter;
+mod filter_mode;
 mod oscillator;
-mod synthesizer;
-mod voice_manager;
+mod synth;
 mod voice;
+mod voice_manager;
 mod waveform;
 
-pub use envelope::EnvelopeStage;
-pub use synthesizer::Synthesizer;
+pub use envelope_stage::EnvelopeStage;
+pub use filter_mode::FilterMode;
+pub use synth::Synth;
 pub use waveform::Waveform;

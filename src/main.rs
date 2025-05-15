@@ -3,18 +3,18 @@
 
 mod audio_engine;
 mod gui;
-mod messages;
+mod commands;
 mod error;
 mod synthesizer;
 
 use std::error::Error;
 use audio_engine::AudioEngine;
 use gui::GuiController;
-use synthesizer::Synthesizer;
+use synthesizer::Synth;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = AudioEngine::new()?;
-    let synth = Synthesizer::new(audio.sample_rate());
+    let synth = Synth::new(audio.sample_rate());
     audio.add_synth(synth)?;
     audio.play()?;
 

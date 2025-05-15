@@ -1,8 +1,4 @@
-use crate::{
-    synthesizer::EnvelopeStage,
-    synthesizer::voice::Voice,
-    synthesizer::Waveform
-};
+use crate::{commands::SynthParam, synthesizer::voice::Voice};
 
 const MAX_VOICES: usize = 16;
 
@@ -21,6 +17,8 @@ impl VoiceManager {
 
     pub fn process_voices(&mut self) -> f32 {
         self.voices.iter_mut().map(|v| v.process()).sum()
+        // let mixed = self.voices.iter_mut().map(|v| v.process()).sum::<f32>();
+        // mixed * 0.5 // TODO: add master volume, gain
     }
 
     pub fn note_on(&mut self, note_number: u8) {
@@ -37,15 +35,9 @@ impl VoiceManager {
         }
     }
 
-    pub fn set_waveform(&mut self, waveform: Waveform) {
+    pub fn apply_param(&mut self, param: SynthParam) {
         for voice in &mut self.voices {
-            voice.set_waveform(waveform);
-        }
-    }
-
-    pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
-        for voice in &mut self.voices {
-            voice.set_stage_value(stage, value);
+            voice.apply_param(param);
         }
     }
 
@@ -54,6 +46,8 @@ impl VoiceManager {
     }
 
     fn find_voice_by_note(&mut self, note_number: u8) -> Option<&mut Voice> {
-        self.voices.iter_mut().find(|v| v.active() && v.note_number() == Some(note_number))
+        self.voices
+            .iter_mut()
+            .find(|v| v.active() && v.note_number() == Some(note_number))
     }
 }
