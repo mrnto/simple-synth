@@ -1,13 +1,19 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+use nih_plug::prelude::Enum;
 use crate::error::SynthParseError;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
 pub enum Waveform {
+    #[name = "Sine"]
     Sine,
+    #[name = "Square"]
     Square,
+    #[name = "Triangle"]
     Triangle,
+    #[name = "Sawtooth"]
     Sawtooth,
+    #[name = "Noise"]
     Noise,
 }
 

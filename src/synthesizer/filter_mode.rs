@@ -1,11 +1,15 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+use nih_plug::prelude::Enum;
 use crate::error::SynthParseError;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
 pub enum FilterMode {
+    #[name = "Lowpass"]
     Lowpass,
+    #[name = "Highpass"]
     Highpass,
+    #[name = "Bandpass"]
     Bandpass,
 }
 

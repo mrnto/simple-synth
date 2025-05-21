@@ -2,11 +2,18 @@
 name = "simple-synthesizer"
 version = "0.1.0"
 edition = "2021"
+authors = ["mrnto"]
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[workspace]
+members = ["xtask"]
 
 [dependencies]
-cpal = "0.15.3"
 rand = "0.9.0"
-slint = "1.8.0"
-
-[build-dependencies]
-slint-build = "1.8.0"
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", features = [
+    "assert_process_allocs",
+] }
+nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git" }
