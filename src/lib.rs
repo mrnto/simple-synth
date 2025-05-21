@@ -156,8 +156,8 @@ impl Plugin for SimpleSynth {
 
         self.voice_manager.apply_param(SynthParam::Waveform(self.params.waveform.value()));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Attack, self.params.attack.value() / 1000.0));
-        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Decay, self.params.decay.value()));
-        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Sustain, self.params.sustain.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Decay, self.params.decay.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Sustain, self.params.sustain.value()));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Release, self.params.release.value() / 1000.0));
         self.voice_manager.apply_param(SynthParam::FilterMode(self.params.filter_mode.value()));
         self.voice_manager.apply_param(SynthParam::Cutoff(self.params.cutoff.value()));
