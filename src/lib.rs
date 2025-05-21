@@ -4,7 +4,8 @@ mod synthesizer;
 
 use std::sync::Arc;
 use nih_plug::{prelude::*, util::db_to_gain};
-use crate::synthesizer::VoiceManager;
+use crate::synthesizer::{FilterMode, EnvelopeStage, VoiceManager, Waveform};
+use crate::commands::SynthParam;
 
 struct SimpleSynth {
     params: Arc<SimpleSynthParams>,
@@ -15,6 +16,22 @@ struct SimpleSynth {
 struct SimpleSynthParams {
     #[id = "gain"]
     gain: FloatParam,
+    #[id = "waveform"]
+    waveform: EnumParam<Waveform>,
+    #[id = "attack"]
+    attack: FloatParam,
+    #[id = "decay"]
+    decay: FloatParam,
+    #[id = "sustain"]
+    sustain: FloatParam,
+    #[id = "release"]
+    release: FloatParam,
+    #[id = "filter_mode"]
+    filter_mode: EnumParam<FilterMode>,
+    #[id = "cutoff"]
+    cutoff: FloatParam,
+    #[id = "resonance"]
+    resonance: FloatParam,
 }
 
 impl Default for SimpleSynth {
@@ -39,7 +56,56 @@ impl Default for SimpleSynthParams {
             )
             .with_step_size(0.1)
             .with_smoother(SmoothingStyle::Linear(50.0))
-            .with_unit(" dB")
+            .with_unit(" dB"),
+            waveform: EnumParam::new("Waveform", Waveform::Sine),
+            attack: FloatParam::new(
+                "Attack",
+                10.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 5000.0
+                })
+                .with_unit(" ms"),
+            decay: FloatParam::new(
+                "Decay",
+                100.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 5000.0
+                })
+                .with_unit(" ms"),
+            sustain: FloatParam::new(
+                "Sustain",
+                0.8,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 1.0
+                }),
+            release: FloatParam::new(
+                "Release",
+                300.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 10000.0
+                })
+                .with_unit(" ms"),
+            filter_mode: EnumParam::new("Filter mode", FilterMode::Lowpass),
+            cutoff: FloatParam::new(
+                "Cutoff",
+                0.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 1.0,
+                }
+            ),
+            resonance: FloatParam::new(
+                "Resonance",
+                0.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 1.0,
+                }
+            )
         }
     }
 }
@@ -87,6 +153,15 @@ impl Plugin for SimpleSynth {
                 _ => {}
             }
         }
+
+        self.voice_manager.apply_param(SynthParam::Waveform(self.params.waveform.value()));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Attack, self.params.attack.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Decay, self.params.decay.value()));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Sustain, self.params.sustain.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Release, self.params.release.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::FilterMode(self.params.filter_mode.value()));
+        self.voice_manager.apply_param(SynthParam::Cutoff(self.params.cutoff.value()));
+        self.voice_manager.apply_param(SynthParam::Resonance(self.params.release.value()));
 
         for channel_samples in buffer.iter_samples() {
             let gain = self.params.gain.smoothed.next();
