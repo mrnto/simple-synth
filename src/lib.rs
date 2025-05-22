@@ -1,11 +1,17 @@
-mod commands;
-mod error;
-mod synthesizer;
-
 use std::sync::Arc;
 use nih_plug::{prelude::*, util::db_to_gain};
-use crate::synthesizer::{FilterMode, EnvelopeStage, VoiceManager, Waveform};
-use crate::commands::SynthParam;
+use nih_plug_iced::IcedState;
+
+mod editor;
+mod synthesizer;
+
+use crate::synthesizer::{
+    EnvelopeStage,
+    FilterMode,
+    Waveform,
+    SynthParam,
+    VoiceManager,
+};
 
 struct SimpleSynth {
     params: Arc<SimpleSynthParams>,
@@ -14,6 +20,8 @@ struct SimpleSynth {
 
 #[derive(Params)]
 struct SimpleSynthParams {
+    #[persist = "editor-state"]
+    editor_state: Arc<IcedState>,
     #[id = "gain"]
     gain: FloatParam,
     #[id = "waveform"]
@@ -46,12 +54,13 @@ impl Default for SimpleSynth {
 impl Default for SimpleSynthParams {
     fn default() -> Self {
         Self {
+            editor_state: editor::default_state(),
             gain: FloatParam::new(
                 "Gain",
                 0.0,
                 FloatRange::Linear {
-                    min: -10.0,
-                    max: 10.0,
+                    min: -20.0,
+                    max: 20.0,
                 },
             )
             .with_step_size(0.1)
@@ -134,6 +143,13 @@ impl Plugin for SimpleSynth {
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
+    }
+
+    fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create(
+            self.params.clone(),
+            self.params.editor_state.clone(),
+        )
     }
 
     fn process(

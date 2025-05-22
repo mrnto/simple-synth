@@ -1,6 +1,8 @@
-use crate::{
-    commands::SynthParam,
-    synthesizer::{envelope::Envelope, filter::Filter, oscillator::Oscillator},
+use crate::synthesizer::{
+    envelope::Envelope,
+    filter::Filter,
+    oscillator::Oscillator,
+    SynthParam,
 };
 
 pub struct Voice {

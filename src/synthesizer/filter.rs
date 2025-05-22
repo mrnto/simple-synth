@@ -1,4 +1,14 @@
-use crate::synthesizer::FilterMode;
+use nih_plug::prelude::Enum;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+pub enum FilterMode {
+    #[name = "Lowpass"]
+    Lowpass,
+    #[name = "Highpass"]
+    Highpass,
+    #[name = "Bandpass"]
+    Bandpass,
+}
 
 pub struct Filter {
     cutoff: f32,

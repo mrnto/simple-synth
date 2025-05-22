@@ -1,6 +1,20 @@
 use std::f32::consts::PI;
 use rand::random;
-use crate::synthesizer::Waveform;
+use nih_plug::prelude::Enum;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+pub enum Waveform {
+    #[name = "Sine"]
+    Sine,
+    #[name = "Square"]
+    Square,
+    #[name = "Triangle"]
+    Triangle,
+    #[name = "Sawtooth"]
+    Sawtooth,
+    #[name = "Noise"]
+    Noise,
+}
 
 // TODO: implement wavetables
 pub struct Oscillator {

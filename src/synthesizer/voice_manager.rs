@@ -1,4 +1,4 @@
-use crate::{commands::SynthParam, synthesizer::voice::Voice};
+use crate::synthesizer::{SynthParam, voice::Voice};
 
 const MAX_VOICES: usize = 16;
 

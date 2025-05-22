@@ -1,13 +1,19 @@
 mod envelope;
-mod envelope_stage;
 mod filter;
-mod filter_mode;
 mod oscillator;
 mod voice;
 mod voice_manager;
-mod waveform;
 
-pub use envelope_stage::EnvelopeStage;
-pub use filter_mode::FilterMode;
+pub use envelope::EnvelopeStage;
+pub use filter::FilterMode;
+pub use oscillator::Waveform;
 pub use voice_manager::VoiceManager;
-pub use waveform::Waveform;
+
+#[derive(Debug, Clone, Copy)]
+pub enum SynthParam {
+    EnvelopeStage(EnvelopeStage, f32),
+    Waveform(Waveform),
+    FilterMode(FilterMode),
+    Cutoff(f32),
+    Resonance(f32),
+}
