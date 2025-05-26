@@ -18,14 +18,14 @@ pub enum Waveform {
 
 // TODO: implement wavetables
 pub struct Oscillator {
-    sample_rate: u32,
+    sample_rate: f32,
     phase: f32,
     frequency: f32,
     waveform: Waveform,
 }
 
 impl Oscillator {
-    pub fn new(sample_rate: u32) -> Self {
+    pub fn new(sample_rate: f32) -> Self {
         Self {
             sample_rate,
             phase: 0.0,
@@ -49,19 +49,23 @@ impl Oscillator {
             }
         };
 
-        self.phase = (self.phase + self.frequency / self.sample_rate as f32).rem_euclid(1.0);
+        self.phase = (self.phase + self.frequency / self.sample_rate).rem_euclid(1.0);
 
         sample
     }
 
     pub fn set_frequency(&mut self, frequency: f32) {
-        self.frequency = frequency.clamp(0.0, self.sample_rate as f32 / 2.0);
+        self.frequency = frequency.clamp(0.0, self.sample_rate / 2.0);
     }
 
     pub fn set_waveform(&mut self, waveform: Waveform) {
         if self.waveform != waveform {
             self.waveform = waveform;
         }
+    }
+
+    pub fn set_sample_rate(&mut self, sample_rate: f32) {
+        self.sample_rate = sample_rate;
     }
 
     fn generate_sine(&self) -> f32 {

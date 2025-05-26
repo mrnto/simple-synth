@@ -1,17 +1,17 @@
+use std::array::from_fn;
 use crate::synthesizer::{SynthParam, voice::Voice};
 
 const MAX_VOICES: usize = 16;
 
-// TODO: fixed-size array
 // TODO: reduce redundant checks (HashMap, VoicePool, etc.)
 pub struct VoiceManager {
-    voices: Vec<Voice>,
+    voices: [Voice; MAX_VOICES],
 }
 
 impl VoiceManager {
-    pub fn new(sample_rate: u32) -> Self {
+    pub fn new(sample_rate: f32) -> Self {
         Self {
-            voices: (0..MAX_VOICES).map(|_| Voice::new(sample_rate)).collect(),
+            voices: from_fn(|_| Voice::new(sample_rate)),
         }
     }
 

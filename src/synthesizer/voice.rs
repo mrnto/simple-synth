@@ -17,7 +17,7 @@ pub struct Voice {
 }
 
 impl Voice {
-    pub fn new(sample_rate: u32) -> Self {
+    pub fn new(sample_rate: f32) -> Self {
         Self {
             oscillator1: Oscillator::new(sample_rate),
             // oscillator2: Oscillator::new(sample_rate),
@@ -78,6 +78,10 @@ impl Voice {
             SynthParam::FilterMode(mode) => self.filter.set_mode(mode),
             SynthParam::Cutoff(value) => self.filter.set_cutoff(value),
             SynthParam::Resonance(value) => self.filter.set_resonance(value),
+            SynthParam::SampleRate(rate) => {
+                self.oscillator1.set_sample_rate(rate);
+                self.envelope1.set_sample_rate(rate);
+            }
         }
     }
 

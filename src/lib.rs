@@ -46,7 +46,7 @@ impl Default for SimpleSynth {
     fn default() -> Self {
         Self {
             params: Arc::new(SimpleSynthParams::default()),
-            voice_manager: VoiceManager::new(44100),
+            voice_manager: VoiceManager::new(44100.0),
         }
     }
 }
@@ -122,7 +122,7 @@ impl Default for SimpleSynthParams {
 impl Plugin for SimpleSynth {
     const NAME: &'static str = "SimpleSynth";
     const VENDOR: &'static str = "mrnto";
-    const URL: &'static str = "https://github.com/mrnto/simple-synthesizer";
+    const URL: &'static str = "https://github.com/mrnto/simple-synth";
     const EMAIL: &'static str = "";
 
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -140,6 +140,16 @@ impl Plugin for SimpleSynth {
 
     type SysExMessage = ();
     type BackgroundTask = ();
+
+    fn initialize(
+        &mut self,
+        _audio_io_layout: &AudioIOLayout,
+        buffer_config: &BufferConfig,
+        _context: &mut impl InitContext<Self>,
+    ) -> bool {
+        self.voice_manager.apply_param(SynthParam::SampleRate(buffer_config.sample_rate));
+        true
+    }
 
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()

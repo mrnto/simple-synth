@@ -16,4 +16,5 @@ pub enum SynthParam {
     FilterMode(FilterMode),
     Cutoff(f32),
     Resonance(f32),
+    SampleRate(f32),
 }
