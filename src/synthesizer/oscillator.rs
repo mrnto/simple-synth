@@ -16,7 +16,8 @@ pub enum Waveform {
     Noise,
 }
 
-// TODO: implement wavetables
+// TODO: wavetables
+// TODO: anti-aliasing (e.g. PolyBLEP)
 pub struct Oscillator {
     sample_rate: f32,
     phase: f32,
@@ -40,13 +41,7 @@ impl Oscillator {
             Waveform::Square => self.generate_square(),
             Waveform::Triangle => self.generate_triangle(),
             Waveform::Sawtooth => self.generate_sawtooth(),
-            Waveform::Noise => {
-                if self.frequency == 0.0 {
-                    0.0
-                } else {
-                    self.generate_noise()
-                }
-            }
+            Waveform::Noise => self.generate_noise(),
         };
 
         self.phase = (self.phase + self.frequency / self.sample_rate).rem_euclid(1.0);
@@ -65,7 +60,13 @@ impl Oscillator {
     }
 
     pub fn set_sample_rate(&mut self, sample_rate: f32) {
-        self.sample_rate = sample_rate;
+        if sample_rate > 0.0 {
+            self.sample_rate = sample_rate;
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.phase = 0.0;
     }
 
     fn generate_sine(&self) -> f32 {

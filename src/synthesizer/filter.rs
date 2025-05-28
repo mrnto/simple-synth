@@ -10,12 +10,15 @@ pub enum FilterMode {
     Bandpass,
 }
 
+// TODO: biquad
 pub struct Filter {
     cutoff: f32,
     resonance: f32,
     feedback: f32,
     buf0: f32,
     buf1: f32,
+    buf2: f32,
+    buf3: f32,
     mode: FilterMode,
 }
 
@@ -27,6 +30,8 @@ impl Filter {
             feedback: 0.0,
             buf0: 0.0,
             buf1: 0.0,
+            buf2: 0.0,
+            buf3: 0.0,
             mode: FilterMode::Lowpass,
         };
         filter.calculate_feedback();
@@ -39,13 +44,16 @@ impl Filter {
             return 0.0;
         }
 
-        self.buf0 += self.cutoff * (input - self.buf0);
+        self.buf0 += self.cutoff * (input - self.buf0 + self.feedback * (self.buf0 - self.buf1));
+        // self.buf0 += self.cutoff * (input - self.buf0);
         self.buf1 += self.cutoff * (self.buf0 - self.buf1);
+        self.buf2 += self.cutoff * (self.buf1 - self.buf2);
+        self.buf3 += self.cutoff * (self.buf2 - self.buf3);
 
         match self.mode {
-            FilterMode::Lowpass => self.buf1,
-            FilterMode::Highpass => input - self.buf0,
-            FilterMode::Bandpass => self.buf0 - self.buf1,
+            FilterMode::Lowpass => self.buf3,
+            FilterMode::Highpass => input - self.buf3,
+            FilterMode::Bandpass => self.buf0 - self.buf3,
         }
     }
 
@@ -65,7 +73,14 @@ impl Filter {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.buf0 = 0.0;
+        self.buf1 = 0.0;
+        self.buf2 = 0.0;
+        self.buf3 = 0.0;
+    }
+
     fn calculate_feedback(&mut self) {
-        self.feedback = self.resonance + self.resonance / (1.0 - self.cutoff);
+        self.feedback = (self.resonance + self.resonance / (1.0 - self.cutoff)).clamp(0.0, 0.99);
     }
 }

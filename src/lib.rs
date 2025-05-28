@@ -101,7 +101,7 @@ impl Default for SimpleSynthParams {
             filter_mode: EnumParam::new("Filter mode", FilterMode::Lowpass),
             cutoff: FloatParam::new(
                 "Cutoff",
-                0.0,
+                1.0,
                 FloatRange::Linear {
                     min: 0.0,
                     max: 1.0,

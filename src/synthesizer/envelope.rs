@@ -10,14 +10,15 @@ const MAX_RELEASE_TIME: f32 = 10.0;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EnvelopeStage {
+    Idle,
     Attack,
     Decay,
     Sustain,
     Release,
-    Idle,
 }
 
-// TODO: exponential; adsr change when note is played
+// TODO: exponential
+// TODO: adsr change when note is played
 pub struct Envelope {
     sample_rate: f32,
     attack_rate: f32,
@@ -66,7 +67,7 @@ impl Envelope {
             EnvelopeStage::Sustain => {},
             EnvelopeStage::Release => {
                 self.level -= 1.0 / self.release_rate;
-                if self.level <= f32::EPSILON {
+                if self.level <= 0.0 {
                     self.level = 0.0;
                     self.stage = EnvelopeStage::Idle;
                 }
@@ -87,6 +88,7 @@ impl Envelope {
 
     pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
         match stage {
+            EnvelopeStage::Idle => (),
             EnvelopeStage::Attack => {
                 self.attack_time = value.clamp(0.000001, MAX_ATTACK_TIME);
                 self.attack_rate = self.attack_time * self.sample_rate;
@@ -102,7 +104,6 @@ impl Envelope {
                 self.release_time = value.clamp(0.000001, MAX_RELEASE_TIME);
                 self.release_rate = self.release_time * self.sample_rate;
             },
-            EnvelopeStage::Idle => (), 
         }
     }
 
@@ -115,5 +116,10 @@ impl Envelope {
         self.attack_rate = self.attack_time * self.sample_rate;
         self.decay_rate = self.decay_time * self.sample_rate;
         self.release_rate = self.release_time * self.sample_rate;
+    }
+
+    pub fn reset(&mut self) {
+        self.stage = EnvelopeStage::Idle;
+        self.level = 0.0;
     }
 }

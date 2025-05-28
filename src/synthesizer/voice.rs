@@ -93,6 +93,14 @@ impl Voice {
         self.note_number
     }
 
+    pub fn reset(&mut self) {
+        self.note_number = None;
+        self.active = false;
+        self.oscillator1.reset();
+        self.envelope1.reset();
+        self.filter.reset();
+    }
+
     fn midi_note_to_frequency(&self, note_number: u8) -> f32 {
         440.0 * 2.0_f32.powf((note_number as f32 - 69.0) / 12.0)
     }

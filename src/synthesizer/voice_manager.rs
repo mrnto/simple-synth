@@ -23,6 +23,7 @@ impl VoiceManager {
 
     pub fn note_on(&mut self, note_number: u8) {
         if let Some(existing_voice) = self.find_voice_by_note(note_number) {
+            existing_voice.reset();
             existing_voice.note_on(note_number);
         } else if let Some(free_voice) = self.find_free_voice() {
             free_voice.note_on(note_number);
