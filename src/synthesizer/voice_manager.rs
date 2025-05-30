@@ -17,8 +17,6 @@ impl VoiceManager {
 
     pub fn process_voices(&mut self) -> f32 {
         self.voices.iter_mut().map(|v| v.process()).sum()
-        // let mixed = self.voices.iter_mut().map(|v| v.process()).sum::<f32>();
-        // mixed * 0.5 // TODO: add master volume, gain
     }
 
     pub fn note_on(&mut self, note_number: u8) {

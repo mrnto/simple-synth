@@ -1,13 +1,3 @@
-const DEFAULT_ATTACK: f32 = 0.2;
-const DEFAULT_DECAY: f32 = 0.2;
-const DEFAULT_SUSTAIN: f32 = 0.8;
-const DEFAULT_RELEASE: f32 = 0.2;
-
-const MAX_ATTACK_TIME: f32 = 10.0;
-const MAX_DECAY_TIME: f32 = 10.0;
-const MAX_SUSTAIN_LEVEL: f32 = 1.0;
-const MAX_RELEASE_TIME: f32 = 10.0;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EnvelopeStage {
     Idle,
@@ -36,13 +26,13 @@ impl Envelope {
     pub fn new(sample_rate: f32) -> Self {
         Self {
             sample_rate,
-            attack_rate: DEFAULT_ATTACK * sample_rate,
-            decay_rate: DEFAULT_DECAY * sample_rate,
-            release_rate: DEFAULT_RELEASE * sample_rate,
-            attack_time: DEFAULT_ATTACK,
-            decay_time: DEFAULT_DECAY,
-            sustain_level: DEFAULT_SUSTAIN,
-            release_time: DEFAULT_RELEASE,
+            attack_rate: 0.1 * sample_rate,
+            decay_rate: 0.2 * sample_rate,
+            release_rate: 1.0 * sample_rate,
+            attack_time: 0.1,
+            decay_time: 0.2,
+            sustain_level: 0.8,
+            release_time: 1.0,
             level: 0.0,
             stage: EnvelopeStage::Idle,
         }
@@ -78,11 +68,11 @@ impl Envelope {
         self.level
     }
 
-    pub fn start_attack(&mut self) {
+    pub fn trigger(&mut self) {
         self.stage = EnvelopeStage::Attack;
     }
 
-    pub fn start_release(&mut self) {
+    pub fn release(&mut self) {
         self.stage = EnvelopeStage::Release;
     }
 
@@ -90,18 +80,18 @@ impl Envelope {
         match stage {
             EnvelopeStage::Idle => (),
             EnvelopeStage::Attack => {
-                self.attack_time = value.clamp(0.000001, MAX_ATTACK_TIME);
+                self.attack_time = value.clamp(0.000001, 10.0);
                 self.attack_rate = self.attack_time * self.sample_rate;
             },
             EnvelopeStage::Decay => {
-                self.decay_time = value.clamp(0.000001, MAX_DECAY_TIME);
+                self.decay_time = value.clamp(0.000001, 10.0);
                 self.decay_rate = self.decay_time * self.sample_rate;
             },
             EnvelopeStage::Sustain => {
-                self.sustain_level = value.clamp(0.0, MAX_SUSTAIN_LEVEL);
+                self.sustain_level = value.clamp(0.0, 1.0);
             },
             EnvelopeStage::Release => {
-                self.release_time = value.clamp(0.000001, MAX_RELEASE_TIME);
+                self.release_time = value.clamp(0.000001, 10.0);
                 self.release_rate = self.release_time * self.sample_rate;
             },
         }
@@ -112,10 +102,12 @@ impl Envelope {
     }
 
     pub fn set_sample_rate(&mut self, sample_rate: f32) {
-        self.sample_rate = sample_rate;
-        self.attack_rate = self.attack_time * self.sample_rate;
-        self.decay_rate = self.decay_time * self.sample_rate;
-        self.release_rate = self.release_time * self.sample_rate;
+        if sample_rate > 0.0 {
+            self.sample_rate = sample_rate;
+            self.attack_rate = self.attack_time * self.sample_rate;
+            self.decay_rate = self.decay_time * self.sample_rate;
+            self.release_rate = self.release_time * self.sample_rate;
+        }
     }
 
     pub fn reset(&mut self) {

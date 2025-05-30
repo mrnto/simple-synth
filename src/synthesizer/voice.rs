@@ -1,12 +1,13 @@
 use crate::synthesizer::{
     envelope::Envelope,
     filter::Filter,
+    oscillator::BasicOscillator,
     oscillator::Oscillator,
     SynthParam,
 };
 
 pub struct Voice {
-    oscillator1: Oscillator,
+    oscillator1: BasicOscillator,
     // oscillator2: Oscillator,
     envelope1: Envelope,
     // envelope2: Envelope,
@@ -19,7 +20,7 @@ pub struct Voice {
 impl Voice {
     pub fn new(sample_rate: f32) -> Self {
         Self {
-            oscillator1: Oscillator::new(sample_rate),
+            oscillator1: BasicOscillator::new(sample_rate),
             // oscillator2: Oscillator::new(sample_rate),
             envelope1: Envelope::new(sample_rate),
             // envelope2: Envelope::new(sample_rate),
@@ -37,10 +38,6 @@ impl Voice {
 
         if self.envelope1.is_idle() {
             self.active = false;
-            match self.note_number {
-                Some(n) => println!("[debug] Free note {}.", n),
-                None => println!("[debug] Free note <none>."),
-            };
             self.note_number = None;
             return 0.0;
         }
@@ -51,23 +48,20 @@ impl Voice {
 
     pub fn note_on(&mut self, note_number: u8) {
         if !self.active {
-            println!("[debug] Start attack for note {}.", note_number);
             let frequency = self.midi_note_to_frequency(note_number);
 
             self.oscillator1.set_frequency(frequency);
-            self.envelope1.start_attack();
+            self.envelope1.trigger();
             self.note_number = Some(note_number);
             self.active = true;
         } else {
-            println!("[debug] Retrigger note {}.", note_number);
-            self.envelope1.start_attack();
+            self.envelope1.trigger();
         }
     }
 
-    pub fn note_off(&mut self, note_number: u8) {
+    pub fn note_off(&mut self, _note_number: u8) {
         if self.active {
-            println!("[debug] Start release for note {}.", note_number);
-            self.envelope1.start_release();
+            self.envelope1.release();
         }
     }
 
