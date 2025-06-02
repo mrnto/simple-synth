@@ -3,15 +3,60 @@ use nih_plug::{prelude::*, util::db_to_gain};
 use nih_plug_iced::IcedState;
 
 mod editor;
-mod synthesizer;
 
-use crate::synthesizer::{
+use simple_synth_core::{
     EnvelopeStage,
     FilterMode,
     Waveform,
     SynthParam,
     VoiceManager,
 };
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+pub enum WaveformParam {
+    #[name = "Sine"]
+    Sine,
+    #[name = "Square"]
+    Square,
+    #[name = "Triangle"]
+    Triangle,
+    #[name = "Sawtooth"]
+    Sawtooth,
+    #[name = "Noise"]
+    Noise,
+}
+
+impl From<WaveformParam> for Waveform {
+    fn from(param: WaveformParam) -> Self {
+        match param {
+            WaveformParam::Sine => Waveform::Sine,
+            WaveformParam::Square => Waveform::Square,
+            WaveformParam::Triangle => Waveform::Triangle,
+            WaveformParam::Sawtooth => Waveform::Sawtooth,
+            WaveformParam::Noise => Waveform::Noise,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+pub enum FilterModeParam {
+    #[name = "Lowpass"]
+    Lowpass,
+    #[name = "Highpass"]
+    Highpass,
+    #[name = "Bandpass"]
+    Bandpass,
+}
+
+impl From<FilterModeParam> for FilterMode {
+    fn from(param: FilterModeParam) -> Self {
+        match param {
+            FilterModeParam::Lowpass => FilterMode::Lowpass,
+            FilterModeParam::Highpass => FilterMode::Highpass,
+            FilterModeParam::Bandpass => FilterMode::Bandpass,
+        }
+    }
+}
 
 struct SimpleSynth {
     params: Arc<SimpleSynthParams>,
@@ -25,7 +70,7 @@ struct SimpleSynthParams {
     #[id = "gain"]
     gain: FloatParam,
     #[id = "waveform"]
-    waveform: EnumParam<Waveform>,
+    waveform: EnumParam<WaveformParam>,
     #[id = "attack"]
     attack: FloatParam,
     #[id = "decay"]
@@ -35,7 +80,7 @@ struct SimpleSynthParams {
     #[id = "release"]
     release: FloatParam,
     #[id = "filter_mode"]
-    filter_mode: EnumParam<FilterMode>,
+    filter_mode: EnumParam<FilterModeParam>,
     #[id = "cutoff"]
     cutoff: FloatParam,
     #[id = "resonance"]
@@ -66,7 +111,7 @@ impl Default for SimpleSynthParams {
             .with_step_size(0.1)
             .with_smoother(SmoothingStyle::Linear(50.0))
             .with_unit(" dB"),
-            waveform: EnumParam::new("Waveform", Waveform::Sine),
+            waveform: EnumParam::new("Waveform", WaveformParam::Sine),
             attack: FloatParam::new(
                 "Attack",
                 10.0,
@@ -98,7 +143,7 @@ impl Default for SimpleSynthParams {
                     max: 10000.0
                 })
                 .with_unit(" ms"),
-            filter_mode: EnumParam::new("Filter mode", FilterMode::Lowpass),
+            filter_mode: EnumParam::new("Filter mode", FilterModeParam::Lowpass),
             cutoff: FloatParam::new(
                 "Cutoff",
                 1.0,
@@ -180,12 +225,12 @@ impl Plugin for SimpleSynth {
             }
         }
 
-        self.voice_manager.apply_param(SynthParam::Waveform(self.params.waveform.value()));
+        self.voice_manager.apply_param(SynthParam::Waveform(self.params.waveform.value().into()));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Attack, self.params.attack.value() / 1000.0));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Decay, self.params.decay.value() / 1000.0));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Sustain, self.params.sustain.value()));
         self.voice_manager.apply_param(SynthParam::EnvelopeStage(EnvelopeStage::Release, self.params.release.value() / 1000.0));
-        self.voice_manager.apply_param(SynthParam::FilterMode(self.params.filter_mode.value()));
+        self.voice_manager.apply_param(SynthParam::FilterMode(self.params.filter_mode.value().into()));
         self.voice_manager.apply_param(SynthParam::Cutoff(self.params.cutoff.value()));
         self.voice_manager.apply_param(SynthParam::Resonance(self.params.release.value()));
 

@@ -1,5 +1,5 @@
 use std::array::from_fn;
-use crate::synthesizer::{SynthParam, voice::Voice};
+use crate::{SynthParam, voice::Voice};
 
 const MAX_VOICES: usize = 16;
 

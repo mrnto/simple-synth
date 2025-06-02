@@ -1,4 +1,4 @@
-use crate::synthesizer::{
+use crate::{
     envelope::Envelope,
     filter::Filter,
     oscillator::BasicOscillator,

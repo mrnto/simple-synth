@@ -1,0 +1,16 @@
+[package]
+name = "simple-synth-plugin"
+version = "0.1.0"
+edition = "2024"
+authors = ["mrnto"]
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+simple-synth-core = { path = "../simple-synth-core" }
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", features = [
+    "assert_process_allocs",
+] }
+nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git" }

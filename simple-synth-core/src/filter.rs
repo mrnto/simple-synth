@@ -1,12 +1,8 @@
-use nih_plug::prelude::Enum;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum FilterMode {
-    #[name = "Lowpass"]
     Lowpass,
-    #[name = "Highpass"]
     Highpass,
-    #[name = "Bandpass"]
     Bandpass,
 }
 

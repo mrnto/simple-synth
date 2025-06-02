@@ -1,20 +1,7 @@
-[package]
-name = "simple-synth"
-version = "0.1.0"
-edition = "2021"
-authors = ["mrnto"]
-license = "MIT"
-
-[lib]
-crate-type = ["cdylib"]
-
 [workspace]
-members = ["xtask"]
-
-[dependencies]
-rand = "0.9.0"
-wide = "0.7.32"
-nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git", features = [
-    "assert_process_allocs",
-] }
-nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+resolver = "3"
+members = [
+    "simple-synth-core",
+    "simple-synth-plugin",
+    "xtask",
+]

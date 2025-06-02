@@ -1,27 +1,19 @@
-use nih_plug::prelude::Enum;
-
-// TODO: wavetables
-// TODO: anti-aliasing (e.g. PolyBLEP)
-
 mod basic;
 mod simd;
 
+// TODO: wavetables
+// TODO: anti-aliasing (e.g. PolyBLEP)
 pub use basic::BasicOscillator;
 pub use simd::SimdOscillator;
 
 /// Represents the different waveform shapes an oscillator can generate.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Enum)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Waveform {
-    #[name = "Sine"]
     Sine,
-    #[name = "Square"]
     Square,
-    #[name = "Triangle"]
     Triangle,
-    #[name = "Sawtooth"]
     Sawtooth,
-    #[name = "Noise"]
     Noise,
 }
 
