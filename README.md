@@ -8,6 +8,7 @@ Software synthesizer plugin written in Rust using [NIH-plug](https://github.com/
 - Polyphony
 - ~~Two oscillators per voice~~ *TODO*
 - ~~Low-frequency oscillator (LFO)~~ *TODO*
+- ~~SIMD support~~ *TODO*
 - ~~MIDI input support~~ *TODO*
 - ~~GUI~~ *TODO*
 - VST3 and CLAP plugin formats
@@ -17,7 +18,7 @@ Building the plugin may require certain development libraries to be installed (e
 
 To build the plugin, run:
 ```bash
-cargo xtask bundle simple-synth --release
+cargo xtask bundle simple-synth-plugin --release
 ```
 
 The plugin bundles will be available in the `target/bundled/` directory.
