@@ -1,15 +1,15 @@
 use crate::{
-    envelope::Envelope,
+    envelope::{Envelope, LinearEnvelope},
+    EnvelopeStage,
     filter::Filter,
-    oscillator::BasicOscillator,
-    oscillator::Oscillator,
-    SynthParam,
+    oscillator::{BasicOscillator, Oscillator},
+    SynthParam
 };
 
 pub struct Voice {
     oscillator1: BasicOscillator,
     // oscillator2: Oscillator,
-    envelope1: Envelope,
+    envelope1: LinearEnvelope,
     // envelope2: Envelope,
     filter: Filter,
     note_number: Option<u8>,
@@ -22,7 +22,7 @@ impl Voice {
         Self {
             oscillator1: BasicOscillator::new(sample_rate),
             // oscillator2: Oscillator::new(sample_rate),
-            envelope1: Envelope::new(sample_rate),
+            envelope1: LinearEnvelope::new(sample_rate),
             // envelope2: Envelope::new(sample_rate),
             filter: Filter::new(),
             note_number: None,
@@ -67,7 +67,15 @@ impl Voice {
 
     pub fn apply_param(&mut self, param: SynthParam) {
         match param {
-            SynthParam::EnvelopeStage(stage, value) => self.envelope1.set_stage_value(stage, value),
+            SynthParam::EnvelopeStage(stage, value) => {
+                match stage {
+                    EnvelopeStage::Attack => self.envelope1.set_attack_time(value),
+                    EnvelopeStage::Decay => self.envelope1.set_decay_time(value),
+                    EnvelopeStage::Sustain => self.envelope1.set_sustain_level(value),
+                    EnvelopeStage::Release => self.envelope1.set_release_time(value),
+                    EnvelopeStage::Idle => (),
+                }
+            },
             SynthParam::Waveform(waveform) => self.oscillator1.set_waveform(waveform),
             SynthParam::FilterMode(mode) => self.filter.set_mode(mode),
             SynthParam::Cutoff(value) => self.filter.set_cutoff(value),

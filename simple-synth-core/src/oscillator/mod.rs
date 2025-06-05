@@ -28,7 +28,7 @@ pub trait Oscillator {
     fn tick(&mut self) -> Self::Output;
     /// Sets the oscillator frequency in hertz.
     fn set_frequency(&mut self, frequency: f32);
-    /// Sets the waveform shape to generate, based on the `Waveform` enum.
+    /// Sets the waveform shape to generate, based on the [`Waveform`] enum.
     fn set_waveform(&mut self, waveform: Waveform);
     /// Sets the sample rate in hertz.
     fn set_sample_rate(&mut self, sample_rate: f32);

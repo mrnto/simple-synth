@@ -1,16 +1,7 @@
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[repr(u8)]
-pub enum EnvelopeStage {
-    Idle,
-    Attack,
-    Decay,
-    Sustain,
-    Release,
-}
+use super::{Envelope, EnvelopeStage};
 
-// TODO: exponential
 // TODO: adsr change when note is played
-pub struct Envelope {
+pub struct LinearEnvelope {
     sample_rate: f32,
     attack_rate: f32,
     decay_rate: f32,
@@ -23,7 +14,7 @@ pub struct Envelope {
     stage: EnvelopeStage,
 }
 
-impl Envelope {
+impl LinearEnvelope {
     pub fn new(sample_rate: f32) -> Self {
         Self {
             sample_rate,
@@ -39,45 +30,7 @@ impl Envelope {
         }
     }
 
-    pub fn process(&mut self) -> f32 {
-        match self.stage {
-            EnvelopeStage::Attack => {
-                self.level += 1.0 / self.attack_rate;
-                if self.level >= 1.0 {
-                    self.level = 1.0;
-                    self.stage = EnvelopeStage::Decay;
-                }
-            },
-            EnvelopeStage::Decay => {
-                self.level -= 1.0 / self.decay_rate;
-                if self.level <= self.sustain_level {
-                    self.level = self.sustain_level;
-                    self.stage = EnvelopeStage::Sustain;
-                }
-            },
-            EnvelopeStage::Sustain => {},
-            EnvelopeStage::Release => {
-                self.level -= 1.0 / self.release_rate;
-                if self.level <= 0.0 {
-                    self.level = 0.0;
-                    self.stage = EnvelopeStage::Idle;
-                }
-            },
-            EnvelopeStage::Idle => {},
-        }
-        
-        self.level
-    }
-
-    pub fn trigger(&mut self) {
-        self.stage = EnvelopeStage::Attack;
-    }
-
-    pub fn release(&mut self) {
-        self.stage = EnvelopeStage::Release;
-    }
-
-    pub fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
+    fn set_stage_value(&mut self, stage: EnvelopeStage, value: f32) {
         match stage {
             EnvelopeStage::Idle => (),
             EnvelopeStage::Attack => {
@@ -97,12 +50,69 @@ impl Envelope {
             },
         }
     }
+}
 
-    pub fn is_idle(&self) -> bool {
+impl Envelope for LinearEnvelope {
+    type Output = f32;
+
+    fn process(&mut self) -> f32 {
+        match self.stage {
+            EnvelopeStage::Idle | EnvelopeStage::Sustain => {},
+            EnvelopeStage::Attack => {
+                self.level += 1.0 / self.attack_rate;
+                if self.level >= 1.0 {
+                    self.level = 1.0;
+                    self.stage = EnvelopeStage::Decay;
+                }
+            },
+            EnvelopeStage::Decay => {
+                self.level -= 1.0 / self.decay_rate;
+                if self.level <= self.sustain_level {
+                    self.level = self.sustain_level;
+                    self.stage = EnvelopeStage::Sustain;
+                }
+            },
+            EnvelopeStage::Release => {
+                self.level -= 1.0 / self.release_rate;
+                if self.level <= 0.0 {
+                    self.level = 0.0;
+                    self.stage = EnvelopeStage::Idle;
+                }
+            },
+        }
+
+        self.level
+    }
+
+    fn trigger(&mut self) {
+        self.stage = EnvelopeStage::Attack;
+    }
+
+    fn release(&mut self) {
+        self.stage = EnvelopeStage::Release;
+    }
+
+    fn is_idle(&self) -> bool {
         self.stage == EnvelopeStage::Idle
     }
 
-    pub fn set_sample_rate(&mut self, sample_rate: f32) {
+    fn set_attack_time(&mut self, attack_time: f32) {
+        self.set_stage_value(EnvelopeStage::Attack, attack_time);
+    }
+
+    fn set_decay_time(&mut self, decay_time: f32) {
+        self.set_stage_value(EnvelopeStage::Decay, decay_time);
+    }
+
+    fn set_sustain_level(&mut self, sustain_level: f32) {
+        self.set_stage_value(EnvelopeStage::Sustain, sustain_level);
+    }
+
+    fn set_release_time(&mut self, release_time: f32) {
+        self.set_stage_value(EnvelopeStage::Release, release_time);
+    }
+
+    fn set_sample_rate(&mut self, sample_rate: f32) {
         if sample_rate > 0.0 {
             self.sample_rate = sample_rate;
             self.attack_rate = self.attack_time * self.sample_rate;
@@ -111,7 +121,7 @@ impl Envelope {
         }
     }
 
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.stage = EnvelopeStage::Idle;
         self.level = 0.0;
     }

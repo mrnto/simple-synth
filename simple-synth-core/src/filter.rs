@@ -9,6 +9,7 @@ pub enum FilterMode {
 // TODO: biquad
 pub struct Filter {
     cutoff: f32,
+    cutoff_mod: f32,
     resonance: f32,
     feedback: f32,
     buf0: f32,
@@ -22,6 +23,7 @@ impl Filter {
     pub fn new() -> Self {
         let mut filter = Self {
             cutoff: 0.99,
+            cutoff_mod: 0.0,
             resonance: 0.0,
             feedback: 0.0,
             buf0: 0.0,
@@ -37,14 +39,16 @@ impl Filter {
 
     pub fn process(&mut self, input: f32) -> f32 {
         if input == 0.0 {
-            return 0.0;
+            return input;
         }
 
-        self.buf0 += self.cutoff * (input - self.buf0 + self.feedback * (self.buf0 - self.buf1));
-        // self.buf0 += self.cutoff * (input - self.buf0);
-        self.buf1 += self.cutoff * (self.buf0 - self.buf1);
-        self.buf2 += self.cutoff * (self.buf1 - self.buf2);
-        self.buf3 += self.cutoff * (self.buf2 - self.buf3);
+        let calc_cutoff = self.calculate_cutoff();
+
+        // self.buf0 += calc_cutoff * (input - self.buf0 + (self.feedback * (self.buf0 - self.buf1)));
+        self.buf0 += calc_cutoff * (input - self.buf0);
+        self.buf1 += calc_cutoff * (self.buf0 - self.buf1);
+        self.buf2 += calc_cutoff * (self.buf1 - self.buf2);
+        self.buf3 += calc_cutoff * (self.buf2 - self.buf3);
 
         match self.mode {
             FilterMode::Lowpass => self.buf3,
@@ -55,6 +59,11 @@ impl Filter {
 
     pub fn set_cutoff(&mut self, cutoff: f32) {
         self.cutoff = cutoff.clamp(0.01, 0.99);
+        self.calculate_feedback();
+    }
+
+    pub fn set_cutoff_mod(&mut self, cutoff_mod: f32) {
+        self.cutoff_mod = cutoff_mod;
         self.calculate_feedback();
     }
 
@@ -76,7 +85,11 @@ impl Filter {
         self.buf3 = 0.0;
     }
 
+    fn calculate_cutoff(&self) -> f32 {
+        (self.cutoff + self.cutoff_mod).clamp(0.01, 0.99)
+    }
+
     fn calculate_feedback(&mut self) {
-        self.feedback = (self.resonance + self.resonance / (1.0 - self.cutoff)).clamp(0.0, 0.99);
+        self.feedback = self.resonance + (self.resonance / (1.0 - self.calculate_cutoff()));
     }
 }

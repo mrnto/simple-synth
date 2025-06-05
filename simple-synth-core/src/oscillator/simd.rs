@@ -74,7 +74,8 @@ impl Oscillator for SimdOscillator {
             Waveform::Noise => self.generate_noise(),
         };
 
-        self.phase = self.phase + f32x4::splat(4.0 * self.step);
+        // self.phase = self.phase + f32x4::splat(4.0 * self.step);
+        self.phase += f32x4::splat(4.0 * self.step);
         // TODO: rem_euclid
         self.phase = self.phase - self.phase.floor();
 
