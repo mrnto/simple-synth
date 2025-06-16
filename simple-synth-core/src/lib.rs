@@ -20,4 +20,6 @@ pub enum SynthParam {
     Cutoff(f32),
     Resonance(f32),
     SampleRate(f32),
+    FilterEnvAmount(f32),
+    FilterEnvStage(EnvelopeStage, f32),
 }

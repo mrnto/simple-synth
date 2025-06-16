@@ -85,6 +85,16 @@ struct SimpleSynthParams {
     cutoff: FloatParam,
     #[id = "resonance"]
     resonance: FloatParam,
+    #[id = "filter_env_amount"]
+    filter_env_amount: FloatParam,
+    #[id = "filter_attack"]
+    filter_attack: FloatParam,
+    #[id = "filter_decay"]
+    filter_decay: FloatParam,
+    #[id = "filter_sustain"]
+    filter_sustain: FloatParam,
+    #[id = "filter_release"]
+    filter_release: FloatParam,
 }
 
 impl Default for SimpleSynth {
@@ -159,7 +169,46 @@ impl Default for SimpleSynthParams {
                     min: 0.0,
                     max: 1.0,
                 }
-            )
+            ),
+            filter_env_amount: FloatParam::new(
+                "Filter Env Amount",
+                0.0,
+                FloatRange::Linear {
+                    min: -1.0,
+                    max: 1.0,
+                }
+            ),
+            filter_attack: FloatParam::new(
+                "Attack",
+                10.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 5000.0
+                })
+                .with_unit(" ms"),
+            filter_decay: FloatParam::new(
+                "Decay",
+                100.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 5000.0
+                })
+                .with_unit(" ms"),
+            filter_sustain: FloatParam::new(
+                "Sustain",
+                0.8,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 1.0
+                }),
+            filter_release: FloatParam::new(
+                "Release",
+                300.0,
+                FloatRange::Linear {
+                    min: 0.0,
+                    max: 10000.0
+                })
+                .with_unit(" ms"),
         }
     }
 }
@@ -233,6 +282,11 @@ impl Plugin for SimpleSynth {
         self.voice_manager.apply_param(SynthParam::FilterMode(self.params.filter_mode.value().into()));
         self.voice_manager.apply_param(SynthParam::Cutoff(self.params.cutoff.value()));
         self.voice_manager.apply_param(SynthParam::Resonance(self.params.release.value()));
+        self.voice_manager.apply_param(SynthParam::FilterEnvAmount(self.params.filter_env_amount.value()));
+        self.voice_manager.apply_param(SynthParam::FilterEnvStage(EnvelopeStage::Attack, self.params.filter_attack.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::FilterEnvStage(EnvelopeStage::Decay, self.params.filter_decay.value() / 1000.0));
+        self.voice_manager.apply_param(SynthParam::FilterEnvStage(EnvelopeStage::Sustain, self.params.filter_sustain.value()));
+        self.voice_manager.apply_param(SynthParam::FilterEnvStage(EnvelopeStage::Release, self.params.filter_release.value() / 1000.0));
 
         for channel_samples in buffer.iter_samples() {
             let gain = self.params.gain.smoothed.next();

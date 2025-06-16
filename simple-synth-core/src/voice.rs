@@ -12,6 +12,8 @@ pub struct Voice {
     envelope1: LinearEnvelope,
     // envelope2: Envelope,
     filter: Filter,
+    filter_envelope: LinearEnvelope,
+    filter_envelope_amount: f32,
     note_number: Option<u8>,
     // velocity: Option<u8>,
     active: bool,
@@ -25,6 +27,8 @@ impl Voice {
             envelope1: LinearEnvelope::new(sample_rate),
             // envelope2: Envelope::new(sample_rate),
             filter: Filter::new(),
+            filter_envelope: LinearEnvelope::new(sample_rate),
+            filter_envelope_amount: 0.0,
             note_number: None,
             // velocity: None,
             active: false,
@@ -42,6 +46,7 @@ impl Voice {
             return 0.0;
         }
 
+        self.filter.set_cutoff_mod(self.filter_envelope.process() * self.filter_envelope_amount); //+ lfo * filter_lfo_amount
         self.filter.process(self.oscillator1.tick() * self.envelope1.process())
         // self.oscillator1.tick() * self.envelope1.process() * (self.velocity / 127.0)
     }
@@ -52,16 +57,19 @@ impl Voice {
 
             self.oscillator1.set_frequency(frequency);
             self.envelope1.trigger();
+            self.filter_envelope.trigger();
             self.note_number = Some(note_number);
             self.active = true;
         } else {
             self.envelope1.trigger();
+            self.filter_envelope.trigger();
         }
     }
 
     pub fn note_off(&mut self, _note_number: u8) {
         if self.active {
             self.envelope1.release();
+            self.filter_envelope.release();
         }
     }
 
@@ -83,7 +91,19 @@ impl Voice {
             SynthParam::SampleRate(rate) => {
                 self.oscillator1.set_sample_rate(rate);
                 self.envelope1.set_sample_rate(rate);
-            }
+            },
+            SynthParam::FilterEnvAmount(value) => {
+                self.filter_envelope_amount = value.clamp(-1.0, 1.0);
+            },
+            SynthParam::FilterEnvStage(stage, value) => {
+                match stage {
+                    EnvelopeStage::Attack => self.filter_envelope.set_attack_time(value),
+                    EnvelopeStage::Decay => self.filter_envelope.set_decay_time(value),
+                    EnvelopeStage::Sustain => self.filter_envelope.set_sustain_level(value),
+                    EnvelopeStage::Release => self.filter_envelope.set_release_time(value),
+                    EnvelopeStage::Idle => (),
+                }
+            },
         }
     }
 
@@ -100,6 +120,7 @@ impl Voice {
         self.active = false;
         self.oscillator1.reset();
         self.envelope1.reset();
+        self.filter_envelope.reset();
         self.filter.reset();
     }
 

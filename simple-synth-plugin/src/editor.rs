@@ -25,6 +25,11 @@ struct SimpleSynthEditor {
     release_slider_state: nih_widgets::param_slider::State,
     cutoff_slider_state: nih_widgets::param_slider::State,
     resonance_slider_state: nih_widgets::param_slider::State,
+    filter_env_amount_slider_state: nih_widgets::param_slider::State,
+    filter_attack_slider_state: nih_widgets::param_slider::State,
+    filter_decay_slider_state: nih_widgets::param_slider::State,
+    filter_sustain_slider_state: nih_widgets::param_slider::State,
+    filter_release_slider_state: nih_widgets::param_slider::State,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -51,6 +56,11 @@ impl IcedEditor for SimpleSynthEditor {
             release_slider_state: Default::default(),
             cutoff_slider_state: Default::default(),
             resonance_slider_state: Default::default(),
+            filter_env_amount_slider_state: Default::default(),
+            filter_attack_slider_state: Default::default(),
+            filter_decay_slider_state: Default::default(),
+            filter_sustain_slider_state: Default::default(),
+            filter_release_slider_state: Default::default(),
         };
 
         (editor, Command::none())
@@ -85,6 +95,16 @@ impl IcedEditor for SimpleSynthEditor {
         let cutoff_slider = nih_widgets::ParamSlider::new(&mut self.cutoff_slider_state, &self.params.cutoff)
             .map(Message::ParamUpdate);
         let resonance_slider = nih_widgets::ParamSlider::new(&mut self.resonance_slider_state, &self.params.resonance)
+            .map(Message::ParamUpdate);
+        let filter_env_amount_slider = nih_widgets::ParamSlider::new(&mut self.filter_env_amount_slider_state, &self.params.filter_env_amount)
+            .map(Message::ParamUpdate);
+        let filter_attack_slider = nih_widgets::ParamSlider::new(&mut self.filter_attack_slider_state, &self.params.filter_attack)
+            .map(Message::ParamUpdate);
+        let filter_decay_slider = nih_widgets::ParamSlider::new(&mut self.filter_decay_slider_state, &self.params.filter_decay)
+            .map(Message::ParamUpdate);
+        let filter_sustain_slider = nih_widgets::ParamSlider::new(&mut self.filter_sustain_slider_state, &self.params.filter_sustain)
+            .map(Message::ParamUpdate);
+        let filter_release_slider = nih_widgets::ParamSlider::new(&mut self.filter_release_slider_state, &self.params.filter_release)
             .map(Message::ParamUpdate);
 
         let env_row = Row::new()
@@ -127,6 +147,35 @@ impl IcedEditor for SimpleSynthEditor {
                 .align_items(Alignment::Center)
                 .push(Text::new("Resonance"))
                 .push(resonance_slider)
+            )
+            .push(Column::new()
+                .align_items(Alignment::Center)
+                .push(Text::new("Filter Env Amount"))
+                .push(filter_env_amount_slider)
+            );
+
+        let filter_env_row = Row::new()
+            .spacing(10)
+            .align_items(Alignment::Center)
+            .push(Column::new()
+                .align_items(Alignment::Center)
+                .push(Text::new("Attack"))
+                .push(filter_attack_slider)
+            )
+            .push(Column::new()
+                .align_items(Alignment::Center)
+                .push(Text::new("Decay"))
+                .push(filter_decay_slider)
+            )
+            .push(Column::new()
+                .align_items(Alignment::Center)
+                .push(Text::new("Sustain"))
+                .push(filter_sustain_slider)
+            )
+            .push(Column::new()
+                .align_items(Alignment::Center)
+                .push(Text::new("Release"))
+                .push(filter_release_slider)
             );
 
         Column::new()
@@ -160,6 +209,8 @@ impl IcedEditor for SimpleSynthEditor {
             .push(env_row)
             .push(Space::with_height(10.into()))
             .push(filter_row)
+            .push(Space::with_height(10.into()))
+            .push(filter_env_row)
             .into()
     }
 
